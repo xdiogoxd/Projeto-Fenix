@@ -1,4 +1,4 @@
-package com.Projeto.Fenix.domain.entity;
+package com.Projeto.Fenix.domain.shoppingList;
 
 
 import jakarta.persistence.Column;

@@ -1,4 +1,4 @@
-package com.Projeto.Fenix.domain.entity;
+package com.Projeto.Fenix.domain.users;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

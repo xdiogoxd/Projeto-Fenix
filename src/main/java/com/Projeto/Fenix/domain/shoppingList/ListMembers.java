@@ -1,5 +1,6 @@
-package com.Projeto.Fenix.domain.entity;
+package com.Projeto.Fenix.domain.shoppingList;
 
+import com.Projeto.Fenix.domain.users.Users;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

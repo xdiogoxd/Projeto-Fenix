@@ -1,4 +1,4 @@
-package com.Projeto.Fenix.domain.entity;
+package com.Projeto.Fenix.domain.items;
 
 
 import jakarta.persistence.*;
