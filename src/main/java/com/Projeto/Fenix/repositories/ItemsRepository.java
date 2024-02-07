@@ -1,4 +1,20 @@
 package com.Projeto.Fenix.repositories;
 
-public interface ItemsRepository {
+import com.Projeto.Fenix.domain.items.Item;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface ItemsRepository extends JpaRepository<Item, String>{
+
+    Optional<Item> createItem(Item theItem);
+
+    Optional<Item> updateItemById(Item theItem);
+
+    void deleteItemById(String theId);
+
+    List<Item> listAllItems();
 }
