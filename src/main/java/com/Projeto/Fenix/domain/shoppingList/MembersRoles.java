@@ -1,0 +1,19 @@
+package com.Projeto.Fenix.domain.shoppingList;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "members_roles")
+public class MembersRoles {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_role")
+    private String roleId;
+
+    @Column(name = "name")
+    private String roleName;
+
+    @Column(name = "description")
+    private String roleDescription;
+}

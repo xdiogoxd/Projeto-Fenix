@@ -7,8 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,11 +22,13 @@ public class ListMembers {
     @Column(name = "id_member_list")
     private String listMembersId;
 
-    @Column(name = "id_list")
-    private String listId;
+    @ManyToMany
+    @JoinColumn(name = "id_list")
+    private ShoppingList listId;
 
-    @Column(name = "id_member")
-    private List<Users> memberId;
+    @ManyToMany
+    @JoinColumn(name = "id_member")
+    private Users memberId;
 
     @Column(name = "list_role")
     private String listRole;

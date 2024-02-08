@@ -30,7 +30,7 @@ public class Item {
     private String itemImage;
 
     @Column(name = "category")
-    private String itemCategory;
+    private Category itemCategory;
 
     @Column(name = "brand")
     private String itemBrand;

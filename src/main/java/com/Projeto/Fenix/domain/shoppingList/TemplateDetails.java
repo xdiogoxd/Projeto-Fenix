@@ -1,21 +1,20 @@
 package com.Projeto.Fenix.domain.shoppingList;
 
-
 import com.Projeto.Fenix.domain.items.Item;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "shopping_list_details")
-public class ShoppingListDetails {
+@Table(name = "templates_details")
+public class TemplateDetails {
 
     @ManyToMany
-    @JoinColumn(name = "id_list")
-    private ShoppingList listId;
+    @JoinColumn(name = "id_template")
+    private Templates templateId;
 
     @ManyToMany
     @JoinColumn(name = "id_item")
     private Item itemId;
 
     @Column(name = "quantity")
-    private double itemQuantity;
+    private double quantity;
 }

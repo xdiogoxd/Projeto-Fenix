@@ -12,8 +12,9 @@ public class ListShare {
     @Column(name = "id_share_code")
     private String ShareCodeId;
 
-    @Column(name = "id_list")
-    private String listId;
+    @ManyToMany
+    @JoinColumn(name = "id_list")
+    private ShoppingList listId;
 
     @Column(name = "invite_type")
     private String inviteType;
