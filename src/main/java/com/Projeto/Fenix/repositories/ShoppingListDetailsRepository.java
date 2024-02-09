@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ShoppingListDetailsRepository extends JpaRepository <ShoppingListDetails, String> {
 
-    void addItem (String listId, String itemId, double quantity);
+    void addItem (String requesterId, String listId, String itemId, double quantity);
 
     void removeItem (String listId, String itemId, double quantity);
 }

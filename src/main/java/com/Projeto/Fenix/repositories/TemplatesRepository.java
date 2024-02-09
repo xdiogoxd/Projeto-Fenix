@@ -14,6 +14,4 @@ public interface TemplatesRepository extends JpaRepository<Templates, String> {
     Optional<Templates> updateTemplate(Templates updatedTemplate);
 
     void deleteTemplateById (String theId);
-
-    Optional<Templates> duplicateTemplate(String templateId, String requester);
 }

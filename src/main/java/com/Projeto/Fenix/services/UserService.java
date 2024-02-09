@@ -20,7 +20,4 @@ public class UserService {
         return this.repository.findUserById(theId);
     }
 
-    public void createList(Users listOwner, String name){
-
-    }
 }
