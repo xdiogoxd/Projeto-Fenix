@@ -4,14 +4,10 @@ import com.Projeto.Fenix.domain.shoppingList.Templates;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+import java.util.List;
 
 @Repository
 public interface TemplatesRepository extends JpaRepository<Templates, String> {
 
-    Optional<Templates> createTemplate(String name);
-
-    Optional<Templates> updateTemplate(Templates updatedTemplate);
-
-    void deleteTemplateById (String theId);
+    List<Templates> listAllTemplatesByUser(String userId);
 }

@@ -3,14 +3,17 @@ package com.Projeto.Fenix.domain.shoppingList;
 import com.Projeto.Fenix.domain.items.Item;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.Date;
 import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
-
+@Setter
+@Getter
 
 
 @Entity

@@ -10,11 +10,7 @@ import java.util.Optional;
 @Repository
 public interface CategoriesRepository extends JpaRepository<Category, String> {
 
-    Optional<Category> createCategory(Category newCategory);
-
-    Optional<Category> updateCategoryById(String theId,Category updatedCategory);
-
-    void deleteCategoryById(String id);
+    Optional<Category> findCategoryByName(String name);
 
     List<Category> listAllCategories();
 

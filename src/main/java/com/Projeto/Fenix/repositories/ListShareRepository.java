@@ -9,9 +9,5 @@ import java.util.List;
 @Repository
 public interface ListShareRepository extends JpaRepository<ListShare, String> {
 
-    String createInviteCode(String requesterId, String listId);
-
-    String deleteInviteCode(String requesterId, String listId);
-
-    List<String> listInviteCodes(String requesterId, String listId);
+    List<String> listInviteCodesByList(String requesterId, String listId);
 }

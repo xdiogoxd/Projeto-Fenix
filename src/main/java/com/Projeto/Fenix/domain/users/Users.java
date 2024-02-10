@@ -38,5 +38,9 @@ public class Users {
     @Column(name = "display_name")
     private String userDisplayName;
 
-
+    public Users(String username, String password, String userEmail) {
+        this.username = username;
+        this.password = password;
+        this.userEmail = userEmail;
+    }
 }

@@ -10,11 +10,9 @@ import java.util.Optional;
 @Repository
 public interface ItemsRepository extends JpaRepository<Item, String>{
 
-    Optional<Item> createItem(Item theItem);
+    Optional<Item> findItemById(String theId);
 
-    Optional<Item> updateItemById(Item theItem);
-
-    void deleteItemById(String theId);
+    Optional<Item> findItemByName(String theName);
 
     List<Item> listAllItems();
 }
