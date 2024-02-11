@@ -31,9 +31,12 @@ public class UserService {
         return this.repository.findUserById(theEmail);
     }
 
-    public Optional<Users> createNewUser(String theUsername, String thePassword, String theEmail){
+    public Users createNewUser(String theUsername, String thePassword, String theEmail) throws Exception{
         Users theUser = null;
         String theId = uuidService.generateUUID().toString();
+        if(!(validateEmailUnique(theEmail) && validateUsernameUnique(theUsername))){
+            throw new Exception("Username ou Email já está em uso");
+        }
         theUser.setUserId(theId);
         theUser.setUsername(theUsername);
         theUser.setPassword(thePassword);
@@ -42,7 +45,23 @@ public class UserService {
 
         repository.save(theUser);
 
-        return repository.findUserById(theUser.getUserId());
+        return theUser;
     }
 
+
+    boolean validateEmailUnique(String theEmail){
+        if (repository.findUserByEmail(theEmail) == null){
+            return true;
+        }else {
+            return false;
+        }
+    }
+
+    boolean validateUsernameUnique(String theUsername){
+        if (repository.findUserByUsername(theUsername) == null){
+            return true;
+        }else {
+            return false;
+        }
+    }
 }
