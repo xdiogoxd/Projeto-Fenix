@@ -22,13 +22,11 @@ public class ListMembers {
     @Column(name = "id_member_list")
     private String listMembersId;
 
-    @OneToMany
-    @JoinTable(name = "table_join_shoppingList_listMembers",
-                joinColumns = @JoinColumn(name = "id_list",  referencedColumnName = "id_list"),
-                inverseJoinColumns= @JoinColumn(name = "id_list", referencedColumnName = "id_list"))
+    @ManyToOne
+    @JoinColumn(name = "id_list")
     private ShoppingList listId;
 
-    @ManyToMany
+    @ManyToOne
     @JoinColumn(name = "id_member")
     private Users memberId;
 

@@ -16,11 +16,16 @@ import lombok.Setter;
 @Table(name = "templates_details")
 public class TemplateDetails {
 
-    @ManyToMany
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_details")
+    private String detailsId;
+
+    @ManyToOne
     @JoinColumn(name = "id_template")
     private Templates templateId;
 
-    @ManyToMany
+    @ManyToOne
     @JoinColumn(name = "id_item")
     private Item itemId;
 

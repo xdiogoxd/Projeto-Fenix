@@ -1,10 +1,15 @@
 package com.Projeto.Fenix.domain.items;
 
+import com.Projeto.Fenix.domain.shoppingList.ListShare;
+import com.Projeto.Fenix.domain.shoppingList.ShoppingList;
+import com.Projeto.Fenix.domain.shoppingList.ShoppingListDetails;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,7 +23,7 @@ public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_item")
-    private String itemId;
+    private String id;
 
     @Column(name = "name")
     private String itemName;
@@ -29,9 +34,11 @@ public class Item {
     @Column(name = "image_url")
     private String itemImage;
 
-    @Column(name = "category")
-    private Category itemCategory;
-
     @Column(name = "brand")
     private String itemBrand;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn()
+    private ShoppingListDetails itemsInLists;
+
 }

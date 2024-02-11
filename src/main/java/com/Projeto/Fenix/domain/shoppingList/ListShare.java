@@ -20,7 +20,7 @@ public class ListShare {
     @Column(name = "id_share_code")
     private String ShareCodeId;
 
-    @ManyToMany
+    @ManyToOne
     @JoinColumn(name = "id_list")
     private ShoppingList listId;
 

@@ -21,7 +21,7 @@ import java.util.List;
 @Table(name = "templates")
 public class Templates {
 
-
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_template")
     private String templateId;
@@ -34,12 +34,6 @@ public class Templates {
 
     @Column(name = "image")
     private String templateImage;
-
-    @Column(name = "items")
-    private List<Item> templateItems;
-
-    @Column(name = "members")
-    private List<Users> templateMembers;
 
     @Column(name = "creationDate")
     private Date templateCreationDate;

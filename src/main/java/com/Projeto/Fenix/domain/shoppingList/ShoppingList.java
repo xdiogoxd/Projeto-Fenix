@@ -34,15 +34,23 @@ public class ShoppingList {
     @Column(name = "list_image_url")
     private String listImage;
 
-    @Column(name = "items")
-    private List<Item> listItems;
-
     @Column(name = "creation_date")
     private Date creationDate;
 
     @Column(name = "goal_date")
     private Date goalDate;
 
+    @ManyToOne(cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn()
+    private ListMembers members;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn()
+    private ListShare shareList;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn()
+    private List<ShoppingListDetails> itemsInList;
 
 
 }
