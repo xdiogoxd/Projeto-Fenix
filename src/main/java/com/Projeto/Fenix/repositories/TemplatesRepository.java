@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface TemplatesRepository extends JpaRepository<Templates, String> {
 
-    List<Templates> listAllTemplatesByUser(String userId);
+//    List<Templates> listAllTemplatesByUser(String userId);
 }

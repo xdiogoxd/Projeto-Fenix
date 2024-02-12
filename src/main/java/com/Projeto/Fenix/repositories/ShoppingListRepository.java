@@ -11,6 +11,6 @@ import java.util.Optional;
 @Repository
 public interface ShoppingListRepository extends JpaRepository <ShoppingList, String> {
 
-    List<ShoppingList> listAllListsByUser(String userId);
+//    List<ShoppingList> listAllListsByUser(String userId);
 
     }

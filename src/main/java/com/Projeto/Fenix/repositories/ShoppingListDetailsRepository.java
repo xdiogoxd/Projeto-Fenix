@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface ShoppingListDetailsRepository extends JpaRepository <ShoppingListDetails, String> {
 
-    List<ShoppingListDetails>  listAllItemsByList(String listId);
+//    List<ShoppingListDetails>  listAllItemsByList(String listId);
 }

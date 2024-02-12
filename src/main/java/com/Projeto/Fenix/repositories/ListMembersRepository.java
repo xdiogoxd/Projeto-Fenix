@@ -10,8 +10,8 @@ import java.util.List;
 @Repository
 public interface ListMembersRepository extends JpaRepository <ListMembers, String> {
 
-    List<ListMembers> listMembersByList(String listId);
+//    List<ListMembers> listMembersByList(String listId);
 
-    List<ListMembers> listMembersByMember(String userId);
+//    List<ListMembers> listMembersByMember(String userId);
 
 }

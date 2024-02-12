@@ -41,7 +41,7 @@ public class Users {
     @Column(name = "display_name")
     private String userDisplayName;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne()
     @PrimaryKeyJoinColumn()
     private ListMembers memberOf;
 
