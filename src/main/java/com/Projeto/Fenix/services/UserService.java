@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -25,9 +26,9 @@ public class UserService {
     EntityManager entityManager;
 
     public Users createNewUser(String theUsername, String thePassword, String theEmail) throws Exception{
-        Users theUser = null;
-        String theId = uuidService.generateUUID().toString();
-        if(!(validateEmailUnique(theEmail) && validateUsernameUnique(theUsername))){
+        Users theUser = new Users();
+        UUID theId = uuidService.generateUUID();
+        if((validateEmailUnique(theEmail) && validateUsernameUnique(theUsername))){
             throw new Exception("Username ou Email já está em uso");
         }
         theUser.setUserId(theId);
@@ -35,11 +36,13 @@ public class UserService {
         theUser.setUserPassword(thePassword);
         theUser.setUserEmail(theEmail);
         theUser.setUserRole("User");
+        theUser.setUserImage("");
+        theUser.setUserDisplayName("User");
 
-        System.out.println(theUser);
-
-        repository.save(theUser);
-
+        System.out.println(theUser.getUserEmail());
+        if (theUser != null) {
+            repository.save(theUser);
+        }
         return theUser;
     }
 
@@ -72,16 +75,19 @@ public class UserService {
                 "FROM Users WHERE userEmail=:theData", Users.class);
 
         theQuery.setParameter("theData", theEmail);
-
-        Users test = theQuery.getSingleResult();
-        if(test != null){
-            System.out.println("test");
-            return test;
-
+        try {
+            return theQuery.getSingleResult();
+        }catch (Exception e){
+            return null;
         }
-        System.out.println("test1email");
-
-        return null;
+//        if(test != null){
+//            System.out.println("test");
+//            return test;
+//
+//        }
+//        System.out.println("test1email");
+//
+//        return null;
     }
 
     Users findUserByUserUsername(String theUsername)throws Exception{
