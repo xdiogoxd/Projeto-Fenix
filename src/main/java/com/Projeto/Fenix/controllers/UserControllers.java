@@ -23,7 +23,6 @@ public class UserControllers {
     @PostMapping
     public ResponseEntity<Users> createNewUser(@RequestBody UserDTO userDTO) throws Exception {
         Users newUser = userService.createNewUser(userDTO.username(), userDTO.password(), userDTO.email());
-        System.out.println(newUser);
         return new ResponseEntity<Users>(newUser, HttpStatus.OK);
 
     }

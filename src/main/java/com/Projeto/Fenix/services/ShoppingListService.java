@@ -11,6 +11,7 @@ import com.Projeto.Fenix.repositories.ShoppingListRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class ShoppingListService {
@@ -23,17 +24,17 @@ public class ShoppingListService {
 
     UuidService uuidService;
 
-    Optional<ShoppingList> createShoppingList(Users owner, String listName){
+    public ShoppingList createShoppingList(Users owner, String listName){
         ShoppingList newShoppingList = null;
 
-        String theListId = uuidService.generateUUID().toString();
+        UUID theListId = uuidService.generateUUID();
         newShoppingList.setListId(theListId);
         newShoppingList.setListName(listName);
         shoppingListRepository.save(newShoppingList);
 
         //Cria listMember na tabela ListMembers
         addNewListMember(owner,"Admin", newShoppingList);
-        return shoppingListRepository.findById(newShoppingList.getListId());
+        return newShoppingList;
     }
 
     void addNewListMember(Users member, String role,ShoppingList theShoppingList){

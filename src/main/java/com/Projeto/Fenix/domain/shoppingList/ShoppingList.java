@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,9 +22,8 @@ import java.util.List;
 public class ShoppingList {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_list")
-    private String listId;
+    private UUID listId;
 
     @Column(name = "list_name")
     private String listName;
