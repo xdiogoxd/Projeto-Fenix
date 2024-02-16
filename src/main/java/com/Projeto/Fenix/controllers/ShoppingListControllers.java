@@ -18,7 +18,7 @@ public class ShoppingListControllers {
     @Autowired
     ShoppingListService shoppingListService;
     @PostMapping
-    public ResponseEntity<ShoppingList> createShoppingList(@RequestBody ShoppingListDTO  shoppingListDTO){
+    public ResponseEntity<ShoppingList> createShoppingList(@RequestBody ShoppingListDTO  shoppingListDTO) throws Exception {
         ShoppingList newShoppingList = shoppingListService.createShoppingList(shoppingListDTO.owner(), shoppingListDTO.shoppingListName());
         return new  ResponseEntity<ShoppingList>(newShoppingList, HttpStatus.OK);
     }

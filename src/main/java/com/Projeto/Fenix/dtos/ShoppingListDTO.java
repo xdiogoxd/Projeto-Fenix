@@ -4,5 +4,5 @@ import com.Projeto.Fenix.domain.users.Users;
 
 import java.util.UUID;
 
-public record ShoppingListDTO(Users owner, String shoppingListName) {
+public record ShoppingListDTO(UUID owner, String shoppingListName) {
 }

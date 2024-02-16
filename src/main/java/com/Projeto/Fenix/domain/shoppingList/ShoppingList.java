@@ -46,11 +46,14 @@ public class ShoppingList {
 
     @ManyToOne(cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn()
-    private ListShare shareList;
+    private List<ListShare> shareList;
 
     @OneToMany(cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn()
     private List<ShoppingListDetails> itemsInList;
 
-
+    public ShoppingList(UUID listId, String listName) {
+        this.listId = listId;
+        this.listName = listName;
+    }
 }

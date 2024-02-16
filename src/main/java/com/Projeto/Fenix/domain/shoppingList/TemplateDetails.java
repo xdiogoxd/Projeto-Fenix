@@ -17,7 +17,6 @@ import lombok.Setter;
 public class TemplateDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_details")
     private String detailsId;
 

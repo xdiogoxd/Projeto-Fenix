@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,9 +20,8 @@ import lombok.Setter;
 public class ListMembers {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_member_list")
-    private String listMembersId;
+    private UUID listMembersId;
 
     @ManyToOne
     @JoinColumn(name = "id_list")

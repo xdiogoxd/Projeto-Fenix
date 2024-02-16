@@ -16,7 +16,6 @@ import lombok.Setter;
 public class ListShare {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_share_code")
     private String ShareCodeId;
 

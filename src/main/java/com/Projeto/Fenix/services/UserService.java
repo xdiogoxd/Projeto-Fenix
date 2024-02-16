@@ -95,12 +95,21 @@ public class UserService {
                 "FROM Users WHERE userUsername=:theData", Users.class);
 
         theQuery.setParameter("theData", theUsername);
-        if(theQuery.getSingleResult().getUserUsername() == theUsername){
-            System.out.println("test");
-            return theQuery.getSingleResult();
-
+        if(theQuery.getSingleResult().getUserUsername() == null){
+            throw new Exception("Usuário não encontrado");
         }
-        System.out.println("test1username");
+
+        return theQuery.getSingleResult();
+    }
+
+    Users findUserByUserId(UUID theId)throws Exception{
+        TypedQuery<Users> theQuery = entityManager.createQuery(
+                "FROM Users WHERE userId=:theData", Users.class);
+
+        theQuery.setParameter("theData", theId);
+        if(theQuery.getSingleResult().getUserId() == theId){
+            return theQuery.getSingleResult();
+        }
         return null;
     }
 }

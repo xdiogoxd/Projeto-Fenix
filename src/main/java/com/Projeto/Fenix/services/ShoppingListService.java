@@ -8,6 +8,9 @@ import com.Projeto.Fenix.domain.users.Users;
 import com.Projeto.Fenix.repositories.ListMembersRepository;
 import com.Projeto.Fenix.repositories.ShoppingListDetailsRepository;
 import com.Projeto.Fenix.repositories.ShoppingListRepository;
+import jakarta.persistence.EntityManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -16,20 +19,32 @@ import java.util.UUID;
 @Service
 public class ShoppingListService {
 
-    ShoppingListRepository shoppingListRepository;
+    @Autowired
+    private ShoppingListRepository shoppingListRepository;
 
-    ShoppingListDetailsRepository shoppingListDetailsRepository;
+    @Autowired
+    private ShoppingListDetailsRepository shoppingListDetailsRepository;
+    @Autowired
+    private ListMembersRepository listMembersRepository;
 
-    ListMembersRepository listMembersRepository;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private UuidService uuidService;
 
-    UuidService uuidService;
+    @Autowired
+    private EntityManager entityManager;
 
-    public ShoppingList createShoppingList(Users owner, String listName){
-        ShoppingList newShoppingList = null;
+    public ShoppingList createShoppingList(UUID owner, String listName) throws Exception {
+        ShoppingList newShoppingList = new ShoppingList();
 
         UUID theListId = uuidService.generateUUID();
+
+        System.out.println(theListId);
+
         newShoppingList.setListId(theListId);
         newShoppingList.setListName(listName);
+
         shoppingListRepository.save(newShoppingList);
 
         //Cria listMember na tabela ListMembers
@@ -37,12 +52,14 @@ public class ShoppingListService {
         return newShoppingList;
     }
 
-    void addNewListMember(Users member, String role,ShoppingList theShoppingList){
-        ListMembers  newListMember = null;
-        String theMemberListId = uuidService.generateUUID().toString();
+    void addNewListMember(UUID member, String role,ShoppingList theShoppingList) throws Exception {
+        ListMembers  newListMember = new ListMembers();
+        UUID theMemberListId = uuidService.generateUUID();
+
+        Users listOwner = userService.findUserByUserId(member);
 
         newListMember.setListMembersId(theMemberListId);
-        newListMember.setMemberId(member);
+        newListMember.setMemberId(listOwner);
         newListMember.setListId(theShoppingList);
         newListMember.setListRole(role);
 

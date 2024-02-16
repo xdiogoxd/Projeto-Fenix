@@ -18,7 +18,6 @@ import lombok.Setter;
 public class ShoppingListDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_details")
     private String detailsId;
 

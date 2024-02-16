@@ -22,7 +22,6 @@ import java.util.List;
 public class Templates {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_template")
     private String templateId;
 
