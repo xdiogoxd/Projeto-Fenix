@@ -16,8 +16,8 @@ import lombok.Setter;
 public class ListShare {
 
     @Id
-    @Column(name = "id_share_code")
-    private String ShareCodeId;
+    @Column(name = "id_share_list")
+    private String ShareListId;
 
     @ManyToOne
     @JoinColumn(name = "id_list")

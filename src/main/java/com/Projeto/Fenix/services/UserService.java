@@ -107,9 +107,9 @@ public class UserService {
                 "FROM Users WHERE userId=:theData", Users.class);
 
         theQuery.setParameter("theData", theId);
-        if(theQuery.getSingleResult().getUserId() == theId){
-            return theQuery.getSingleResult();
+        if(theQuery.getSingleResult().getUserId() == null){
+            throw new Exception("Usuário não encontrado");
         }
-        return null;
-    }
+        return theQuery.getSingleResult();
+        }
 }

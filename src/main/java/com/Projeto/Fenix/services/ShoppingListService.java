@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -39,11 +40,13 @@ public class ShoppingListService {
         ShoppingList newShoppingList = new ShoppingList();
 
         UUID theListId = uuidService.generateUUID();
-
-        System.out.println(theListId);
+        Date today = new Date();
 
         newShoppingList.setListId(theListId);
         newShoppingList.setListName(listName);
+        newShoppingList.setCreationDate(today);
+
+        System.out.println(newShoppingList);
 
         shoppingListRepository.save(newShoppingList);
 
@@ -53,14 +56,16 @@ public class ShoppingListService {
     }
 
     void addNewListMember(UUID member, String role,ShoppingList theShoppingList) throws Exception {
-        ListMembers  newListMember = new ListMembers();
+        ListMembers newListMember = new ListMembers();
         UUID theMemberListId = uuidService.generateUUID();
 
         Users listOwner = userService.findUserByUserId(member);
 
+        System.out.println(listOwner);
+
         newListMember.setListMembersId(theMemberListId);
-        newListMember.setMemberId(listOwner);
         newListMember.setListId(theShoppingList);
+        newListMember.setMemberId(listOwner);
         newListMember.setListRole(role);
 
         listMembersRepository.save(newListMember);
@@ -68,7 +73,7 @@ public class ShoppingListService {
 
     void addItemToList(Users requester, ShoppingList shoppingList, Item theItem, double quantity){
         if((shoppingListDetailsRepository.findById(theItem.getItemId())).isEmpty()) {
-            ShoppingListDetails newItem = null;
+            ShoppingListDetails newItem = new ShoppingListDetails();
             newItem.setListId(shoppingList);
             newItem.setItemId(theItem);
             newItem.setItemQuantity(quantity);

@@ -25,13 +25,13 @@ public class ShoppingList {
     @Column(name = "id_list")
     private UUID listId;
 
-    @Column(name = "list_name")
+    @Column(name = "name")
     private String listName;
 
     @Column(name = "description")
     private String listDescription;
 
-    @Column(name = "list_image_url")
+    @Column(name = "image_url")
     private String listImage;
 
     @Column(name = "creation_date")
@@ -41,19 +41,15 @@ public class ShoppingList {
     private Date goalDate;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @PrimaryKeyJoinColumn()
-    private List<ListMembers> members;
+    @JoinColumn(name = "id_list", insertable=false, updatable=false)
+    private ListMembers members;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @PrimaryKeyJoinColumn()
-    private List<ListShare> shareList;
+    @JoinColumn(name = "id_list", insertable=false, updatable=false)
+    private ListShare shareList;
 
     @OneToMany(cascade = CascadeType.ALL)
-    @PrimaryKeyJoinColumn()
+    @JoinColumn(name = "id_list", insertable=false, updatable=false)
     private List<ShoppingListDetails> itemsInList;
 
-    public ShoppingList(UUID listId, String listName) {
-        this.listId = listId;
-        this.listName = listName;
-    }
 }
