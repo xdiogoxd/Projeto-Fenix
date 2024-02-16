@@ -72,6 +72,12 @@ public class ShoppingListService {
     }
 
     void addItemToList(Users requester, ShoppingList shoppingList, Item theItem, double quantity){
+        // checa se o requester tem autorização para adicionar item na lista
+        if(true){
+
+        }
+
+
         if((shoppingListDetailsRepository.findById(theItem.getItemId())).isEmpty()) {
             ShoppingListDetails newItem = new ShoppingListDetails();
             newItem.setListId(shoppingList);
@@ -81,6 +87,7 @@ public class ShoppingListService {
             shoppingListDetailsRepository.save(newItem);
 
         }else{
+
 
         }
 
