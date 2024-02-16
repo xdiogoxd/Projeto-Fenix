@@ -42,7 +42,7 @@ public class ShoppingList {
 
     @ManyToOne(cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn()
-    private ListMembers members;
+    private List<ListMembers> members;
 
     @ManyToOne(cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn()
