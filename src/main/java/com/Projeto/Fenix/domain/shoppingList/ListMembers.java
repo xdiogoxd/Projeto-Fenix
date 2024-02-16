@@ -20,6 +20,7 @@ import java.util.UUID;
 public class ListMembers {
 
     @Id
+    @Column(name = "id_member_list")
     private UUID listMembersId;
 
     @ManyToOne
