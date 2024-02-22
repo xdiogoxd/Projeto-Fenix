@@ -1,7 +1,9 @@
 package com.Projeto.Fenix.controllers;
 
 import com.Projeto.Fenix.domain.shoppingList.ShoppingList;
+import com.Projeto.Fenix.domain.shoppingList.ShoppingListDetails;
 import com.Projeto.Fenix.dtos.ShoppingListDTO;
+import com.Projeto.Fenix.dtos.ShoppingListDetailsDTO;
 import com.Projeto.Fenix.services.ShoppingListService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,7 +22,14 @@ public class ShoppingListControllers {
     @PostMapping
     public ResponseEntity<ShoppingList> createShoppingList(@RequestBody ShoppingListDTO  shoppingListDTO) throws Exception {
         ShoppingList newShoppingList = shoppingListService.createShoppingList(shoppingListDTO.owner(), shoppingListDTO.shoppingListName());
-        return new  ResponseEntity<ShoppingList>(newShoppingList, HttpStatus.OK);
+        return new ResponseEntity<ShoppingList>(newShoppingList, HttpStatus.OK);
+    }
+
+    @PostMapping
+    @RequestMapping("/item")
+    public ResponseEntity<ShoppingListDetails> addNewItem(@RequestBody ShoppingListDetailsDTO shoppingListDetailsDTO) throws Exception {
+        ShoppingListDetails newShoppingListDetails = shoppingListService.addItemToList(shoppingListDetailsDTO.requesterId(), shoppingListDetailsDTO.itemId(), shoppingListDetailsDTO.itemId(), shoppingListDetailsDTO.quantity());
+        return new ResponseEntity<ShoppingListDetails>(newShoppingListDetails,HttpStatus.OK);
     }
 
 }

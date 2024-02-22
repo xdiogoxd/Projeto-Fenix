@@ -11,11 +11,9 @@ import com.Projeto.Fenix.repositories.ShoppingListRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -32,10 +30,14 @@ public class ShoppingListService {
     @Autowired
     private UserService userService;
     @Autowired
+    private ItemsService itemsService;
+    @Autowired
     private UuidService uuidService;
 
     @Autowired
     private EntityManager entityManager;
+
+
 
     public ShoppingList createShoppingList(UUID owner, String listName) throws Exception {
         ShoppingList newShoppingList = new ShoppingList();
@@ -72,30 +74,41 @@ public class ShoppingListService {
         listMembersRepository.save(newListMember);
     }
 
-    void addItemToList(Users requester, ShoppingList shoppingList, Item theItem, double quantity){
+    public ShoppingListDetails addItemToList(UUID requesterId, UUID shoppingListId, UUID theItemId, double quantity) throws Exception {
         // checa a role do requester nesta lista, para verificar se o usuário pode realizar a atividade ou não
+
+        Users requester = userService.findUserByUserId(requesterId);
+        ShoppingList shoppingList = findShoppingListById(shoppingListId);
+        Item theItem = itemsService.findItemById(theItemId);
 
         if (validateShoppingListToUser(requester, shoppingList)){
 
             if(validateItemAlreadyExist(theItem, shoppingList) ){
-
-
+                ShoppingListDetails theResult = updateItems(shoppingList, theItem, quantity, "add");
+                return theResult;
+            }else {
+                ShoppingListDetails theResult = addNewItemToList(shoppingList, theItem, quantity);
+                return theResult;
             }
 
         }
+        throw new Exception("Usuário não autorizado para realizar atualização da lista");
 
+    }
 
-        if((shoppingListDetailsRepository.findById(theItem.getItemId())).isEmpty()) {
-            ShoppingListDetails newItem = new ShoppingListDetails();
-            newItem.setListId(shoppingList);
-            newItem.setItemId(theItem);
-            newItem.setItemQuantity(quantity);
+    ShoppingList findShoppingListById(UUID theShoppingListId) throws Exception {
 
-            shoppingListDetailsRepository.save(newItem);
+        TypedQuery<ShoppingList> theQuery = entityManager.createQuery(
+                "FROM ShoppingList WHERE listId=:theList", ShoppingList.class);
 
-        }else{
+        theQuery.setParameter("theList",theShoppingListId);
 
+        ShoppingList theList = theQuery.getSingleResult();
 
+        if (theList.equals(null)){
+            throw new Exception("Lista não localizada");
+        }else {
+            return theList;
         }
 
     }
@@ -138,7 +151,7 @@ public class ShoppingListService {
         }
     }
 
-    String updateItems(ShoppingList theList, Item theItem, double quantity, String action) throws Exception {
+    ShoppingListDetails updateItems(ShoppingList theList, Item theItem, double quantity, String action) throws Exception {
 
         if(validateItemAlreadyExist(theItem, theList)){
             if(action == "add"){
@@ -153,7 +166,9 @@ public class ShoppingListService {
                 theShoppingListDetails.setItemQuantity(theShoppingListDetails.getItemQuantity() + quantity);
 
                 entityManager.merge(theShoppingListDetails);
-                return "Item updated";
+
+                return theShoppingListDetails;
+
             }else if (action == "remove"){
                 TypedQuery<ShoppingListDetails> theQuery = entityManager.createQuery(
                         "FROM ShoppingListDetails WHERE listId=:theList AND itemId=:theItem", ShoppingListDetails.class);
@@ -165,16 +180,36 @@ public class ShoppingListService {
 
                 if (theShoppingListDetails.getItemQuantity() < quantity){
                     entityManager.remove(theShoppingListDetails);
-                    return "Item removed";
+                    return null;
                 }
                 theShoppingListDetails.setItemQuantity(theShoppingListDetails.getItemQuantity() - quantity);
 
                 entityManager.merge(theShoppingListDetails);
+                return theShoppingListDetails;
+
 
             } else {
                 throw new Exception("Ação não suportada");
             }
         }
         throw new Exception("Item não está na lista");
+    }
+
+    ShoppingListDetails addNewItemToList(ShoppingList theList, Item theItem, double quantity) throws Exception {
+        if(!validateItemAlreadyExist(theItem, theList)){
+            ShoppingListDetails theNewItem = new ShoppingListDetails();
+
+            UUID theDetailsId = uuidService.generateUUID();
+
+            theNewItem.setDetailsId(theDetailsId);
+            theNewItem.setItemId(theItem);
+            theNewItem.setListId(theList);
+            theNewItem.setItemQuantity(quantity);
+
+            ShoppingListDetails theResult = shoppingListDetailsRepository.save(theNewItem);
+
+            return theResult;
+        }
+        throw new Exception("Item já existe na lista");
     }
 }

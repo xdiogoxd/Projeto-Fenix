@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -19,7 +21,7 @@ public class ShoppingListDetails {
 
     @Id
     @Column(name = "id_details")
-    private String detailsId;
+    private UUID detailsId;
 
     @ManyToOne
     @JoinColumn(name = "id_list")
