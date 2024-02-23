@@ -24,8 +24,8 @@ public class ItemsControllers {
     }
 
     @PutMapping
-    public ResponseEntity<Item> updateItemByName(@RequestBody ItemsDTO itemsDTO, UUID requester) throws Exception{
-        Item updatedItem = itemsService.updateItemById(requester, itemsDTO.itemId(), itemsDTO.itemName(), itemsDTO.itemDescription(), itemsDTO.itemImage(), itemsDTO.itemBrand());
+    public ResponseEntity<Item> updateItemByName(@RequestBody ItemsDTO itemsDTO) throws Exception{
+        Item updatedItem = itemsService.updateItemById(itemsDTO.requester(), itemsDTO.itemId(), itemsDTO.itemName(), itemsDTO.itemDescription(), itemsDTO.itemImage(), itemsDTO.itemBrand());
         return new ResponseEntity<Item>(updatedItem, HttpStatus.OK);
     }
 
@@ -35,9 +35,9 @@ public class ItemsControllers {
         return new ResponseEntity<List<Item>>(getAllItems, HttpStatus.OK);
     }
 
-    @GetMapping("/id/{itemId}")
-    public ResponseEntity<Item> listItemById(@PathVariable UUID itemId) throws Exception{
-        Item getItem = itemsService.findItemById(itemId);
+    @GetMapping("/id")
+    public ResponseEntity<Item> listItemById(@RequestBody ItemsDTO itemsDTO) throws Exception{
+        Item getItem = itemsService.findItemById(itemsDTO.itemId());
         return new ResponseEntity<Item>(getItem, HttpStatus.OK);
     }
 
@@ -47,4 +47,15 @@ public class ItemsControllers {
         return new ResponseEntity<Item>(getItem, HttpStatus.OK);
     }
 
+    @DeleteMapping("/id")
+    public ResponseEntity<Item> deleteItemById(@RequestBody ItemsDTO itemsDTO) throws Exception{
+        itemsService.deleteItemById(itemsDTO.itemId(), itemsDTO.requester());
+        return new ResponseEntity<Item>(HttpStatus.OK);
+    }
+
+    @DeleteMapping("/name/{itemName}")
+    public ResponseEntity<Item> deleteItemByName(@PathVariable String itemName, @RequestBody ItemsDTO itemsDTO) throws Exception {
+        itemsService.deleteItemByName(itemName, itemsDTO.requester());
+        return new ResponseEntity<Item>(HttpStatus.OK);
+    }
 }

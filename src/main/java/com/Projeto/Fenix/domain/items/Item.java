@@ -23,7 +23,7 @@ public class Item {
 
     @Id
     @Column(name = "id_item")
-    private UUID ItemId;
+    private UUID itemId;
 
     @Column(name = "name")
     private String itemName;

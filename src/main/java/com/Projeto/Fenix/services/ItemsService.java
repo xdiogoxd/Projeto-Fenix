@@ -25,6 +25,7 @@ public class ItemsService {
     @Autowired
     EntityManager entityManager;
     public Item findItemById(UUID theItemId) throws Exception {
+        System.out.println(theItemId);
         TypedQuery<Item> theQuery = entityManager.createQuery(
                 "FROM Item WHERE itemId=:theId", Item.class);
 
@@ -32,15 +33,17 @@ public class ItemsService {
 
 
         try {
-            return theQuery.getSingleResult();
+            Item result = theQuery.getSingleResult();
+            System.out.println(result);
+            return result;
         }catch (Exception e){
-            return null;
+            throw new Exception("Item não encontrado");
         }
 
 
     }
 
-    public Item findItemByName(String theItemName) throws Exception {
+    public Item findItemByName(String theItemName){
         TypedQuery<Item> theQuery = entityManager.createQuery(
                 "FROM Item WHERE itemName=:theName", Item.class);
 
@@ -101,7 +104,7 @@ public class ItemsService {
             theUpdatedItem.setItemImage(itemImage);
             theUpdatedItem.setItemBrand(itemBrand);
 
-            entityManager.merge(theUpdatedItem);
+            itemsRepository.save(theUpdatedItem);
 
             return  theUpdatedItem;
         }else {
@@ -119,6 +122,46 @@ public class ItemsService {
             throw new Exception("Nenhum Item encontrado");
         }
         return theItems;
+    }
+
+    public void deleteItemById(UUID theItemId, UUID requester) throws Exception {
+
+        if(userService.validateUserAuthorization(requester)) {
+            TypedQuery<Item> theQuery = entityManager.createQuery(
+                    "FROM Item WHERE itemId=:theId", Item.class);
+
+            theQuery.setParameter("theId", theItemId);
+
+
+            try {
+                Item theItem = theQuery.getSingleResult();
+                itemsRepository.delete(theItem);
+            } catch (Exception e) {
+                throw new Exception("Item não encontrado");
+            }
+        }
+
+    }
+
+    public void deleteItemByName(String theItemName, UUID requester) throws Exception {
+
+        if(userService.validateUserAuthorization(requester)) {
+            TypedQuery<Item> theQuery = entityManager.createQuery(
+                    "FROM Item WHERE itemName=:theName", Item.class);
+
+            theQuery.setParameter("theName", theItemName);
+
+
+            try {
+                Item theItem = theQuery.getSingleResult();
+                itemsRepository.delete(theItem);
+            } catch (Exception e) {
+                throw new Exception("Item não encontrado");
+            }
+        }else {
+            throw new Exception("Usuário não autorizado");
+        }
+
     }
 }
 
