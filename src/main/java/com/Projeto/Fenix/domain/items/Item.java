@@ -34,11 +34,10 @@ public class Item {
     @Column(name = "image_url")
     private String itemImage;
 
+    @Column(name = "category")
+    private String itemCategory;
+
     @Column(name = "brand")
     private String itemBrand;
-
-    @ManyToOne(cascade = CascadeType.ALL)
-    @PrimaryKeyJoinColumn()
-    private ShoppingListDetails itemsInLists;
 
 }

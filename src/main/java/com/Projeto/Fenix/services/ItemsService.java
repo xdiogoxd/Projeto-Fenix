@@ -1,13 +1,13 @@
 package com.Projeto.Fenix.services;
 
 import com.Projeto.Fenix.domain.items.Item;
-import com.Projeto.Fenix.domain.shoppingList.ListMembers;
 import com.Projeto.Fenix.repositories.ItemsRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -17,69 +17,108 @@ public class ItemsService {
     UuidService uuidService;
 
     @Autowired
+    UserService userService;
+
+    @Autowired
     ItemsRepository itemsRepository;
 
     @Autowired
     EntityManager entityManager;
-    Item findItemById(UUID theItemId) throws Exception {
+    public Item findItemById(UUID theItemId) throws Exception {
         TypedQuery<Item> theQuery = entityManager.createQuery(
                 "FROM Item WHERE itemId=:theId", Item.class);
 
         theQuery.setParameter("theId",theItemId);
 
-        Item theItem = theQuery.getSingleResult();
 
-        if (theItem.equals(null)){
-            throw new Exception("Item não encontrado");
-        }else {
-            return theItem;
+        try {
+            return theQuery.getSingleResult();
+        }catch (Exception e){
+            return null;
         }
 
 
     }
 
-    Item findItemByName(String theItemName) throws Exception {
+    public Item findItemByName(String theItemName) throws Exception {
         TypedQuery<Item> theQuery = entityManager.createQuery(
                 "FROM Item WHERE itemName=:theName", Item.class);
 
         theQuery.setParameter("theName",theItemName);
 
-        Item theItem = theQuery.getSingleResult();
-
-        if (theItem.equals(null)){
-            throw new Exception("Item não encontrado");
-        }else {
-            return theItem;
+        try {
+            return theQuery.getSingleResult();
+        }catch (Exception e){
+            return null;
         }
-
 
     }
 
-    Boolean validateNameAvability(String theName) throws Exception {
+    Boolean validateNameAvailability(String theName) throws Exception {
         Item result = findItemByName(theName);
 
-        if (result.equals(null)){
-            return false;
-        }else{
+
+        if (result == null){
+            // nome disponivel
             return true;
+        }else{
+            // nome indisponivel
+            return false;
         }
     }
 
-    Item addNewItem(String itemName, String itemDescription) throws Exception {
-        if(validateNameAvability(itemName)){
-            UUID theId = uuidService.generateUUID();
+    public Item addNewItem(UUID requester, String itemName, String itemDescription, String itemCategory) throws Exception {
 
-            Item theItem = new Item();
+        if(userService.validateUserAuthorization(requester)){
+            if(validateNameAvailability(itemName)){
+                UUID theId = uuidService.generateUUID();
 
-            theItem.setItemId(theId);
-            theItem.setItemName(itemName);
-            theItem.setItemDescription(itemDescription);
+                Item theItem = new Item();
 
-            itemsRepository.save(theItem);
+                theItem.setItemId(theId);
+                theItem.setItemName(itemName);
+                theItem.setItemCategory(itemCategory);
+                theItem.setItemDescription(itemDescription);
 
-            return theItem;
+                itemsRepository.save(theItem);
+
+                return theItem;
+            }else {
+                throw new Exception("Nome duplicado");
+            }
+        }else {
+            throw new Exception("Usuário não autorizado");
         }
-        throw new Exception("Nome duplicado");
+    }
+
+    public Item updateItemById(UUID requester, UUID itemId, String itemName, String itemDescription,
+                               String itemImage, String itemBrand) throws Exception {
+        if(userService.validateUserAuthorization(requester)){
+            Item theUpdatedItem = findItemById(itemId);
+
+            theUpdatedItem.setItemName(itemName);
+            theUpdatedItem.setItemDescription(itemDescription);
+            theUpdatedItem.setItemImage(itemImage);
+            theUpdatedItem.setItemBrand(itemBrand);
+
+            entityManager.merge(theUpdatedItem);
+
+            return  theUpdatedItem;
+        }else {
+            throw new Exception("Usuário não autorizado");
+        }
+    }
+
+    public List<Item> listAllItems() throws Exception {
+        TypedQuery<Item> theQuery = entityManager.createQuery(
+                "FROM Item", Item.class);
+
+        List<Item> theItems = theQuery.getResultList();
+
+        if(theItems.size() == 0){
+            throw new Exception("Nenhum Item encontrado");
+        }
+        return theItems;
     }
 }
 

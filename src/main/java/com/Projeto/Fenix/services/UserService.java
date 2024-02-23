@@ -69,6 +69,18 @@ public class UserService {
         }
     }
 
+    Boolean validateUserAuthorization(UUID requesterId) throws Exception {
+        Users requester = findUserByUserId(requesterId);
+
+        System.out.println("id: "+ requester.getUserId()+" role: " +requester.getUserRole());
+
+        if(requester.getUserRole().equals("admin")){
+            return true;
+        }else {
+            return false;
+        }
+    }
+
 
     Users findUserByUserEmail(String theEmail){
         TypedQuery<Users> theQuery = entityManager.createQuery(
@@ -106,10 +118,14 @@ public class UserService {
         TypedQuery<Users> theQuery = entityManager.createQuery(
                 "FROM Users WHERE userId=:theData", Users.class);
 
+        System.out.println(theId);
+
         theQuery.setParameter("theData", theId);
-        if(theQuery.getSingleResult().getUserId() == null){
+
+        Users theUser = theQuery.getSingleResult();
+        if(theUser.getUserId() == null){
             throw new Exception("Usuário não encontrado");
         }
-        return theQuery.getSingleResult();
+        return theUser;
         }
 }

@@ -32,4 +32,5 @@ public class ShoppingListControllers {
         return new ResponseEntity<ShoppingListDetails>(newShoppingListDetails,HttpStatus.OK);
     }
 
+
 }
