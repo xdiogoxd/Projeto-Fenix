@@ -1,6 +1,8 @@
 package com.Projeto.Fenix.services;
 
 import com.Projeto.Fenix.domain.items.Item;
+import com.Projeto.Fenix.exceptions.ItemAlreadyExistException;
+import com.Projeto.Fenix.exceptions.ItemNotFoundException;
 import com.Projeto.Fenix.repositories.ItemsRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
@@ -24,80 +26,36 @@ public class ItemsService {
 
     @Autowired
     EntityManager entityManager;
-    public Item findItemById(UUID theItemId) throws Exception {
-        System.out.println(theItemId);
-        TypedQuery<Item> theQuery = entityManager.createQuery(
-                "FROM Item WHERE itemId=:theId", Item.class);
-
-        theQuery.setParameter("theId",theItemId);
-
-
-        try {
-            Item result = theQuery.getSingleResult();
-            System.out.println(result);
-            return result;
-        }catch (Exception e){
-            throw new Exception("Item não encontrado");
-        }
-
-
-    }
-
-    public Item findItemByName(String theItemName){
-        TypedQuery<Item> theQuery = entityManager.createQuery(
-                "FROM Item WHERE itemName=:theName", Item.class);
-
-        theQuery.setParameter("theName",theItemName);
-
-        try {
-            return theQuery.getSingleResult();
-        }catch (Exception e){
-            return null;
-        }
-
-    }
-
-    Boolean validateNameAvailability(String theName) throws Exception {
-        Item result = findItemByName(theName);
-
-
-        if (result == null){
-            // nome disponivel
-            return true;
-        }else{
-            // nome indisponivel
-            return false;
-        }
-    }
 
     public Item addNewItem(UUID requester, String itemName, String itemDescription, String itemCategory) throws Exception {
+        // valida se o usuário pode fazer a criação
+        userService.validateUserAuthorization(requester);
+        // valida se o nome está disponível para uso
+        if(validateNameIsAvailable(itemName)){
+            // Seta todos os atributos do item e cria o item
+            UUID theId = uuidService.generateUUID();
 
-        if(userService.validateUserAuthorization(requester)){
-            if(validateNameAvailability(itemName)){
-                UUID theId = uuidService.generateUUID();
+            Item theItem = new Item();
 
-                Item theItem = new Item();
+            theItem.setItemId(theId);
+            theItem.setItemName(itemName);
+            theItem.setItemCategory(itemCategory);
+            theItem.setItemDescription(itemDescription);
 
-                theItem.setItemId(theId);
-                theItem.setItemName(itemName);
-                theItem.setItemCategory(itemCategory);
-                theItem.setItemDescription(itemDescription);
-
-                itemsRepository.save(theItem);
-
-                return theItem;
-            }else {
-                throw new Exception("Nome duplicado");
-            }
+            return itemsRepository.save(theItem);
         }else {
-            throw new Exception("Usuário não autorizado");
+            throw new ItemAlreadyExistException();
         }
     }
-
     public Item updateItemById(UUID requester, UUID itemId, String itemName, String itemDescription,
                                String itemImage, String itemBrand) throws Exception {
-        if(userService.validateUserAuthorization(requester)){
-            Item theUpdatedItem = findItemById(itemId);
+        // instancia o item com que será atualizado
+        Item theUpdatedItem = findItemById(itemId);
+
+        //Valida se o usuário pode atualizar um item
+        userService.validateUserAuthorization(requester);
+        //Valida se o nome foi atualizado e caso ele foi atualizado se esse novo nome está disponível
+        if(validateNameIsAvailable(itemName) || theUpdatedItem.getItemName().equals(itemName)) {
 
             theUpdatedItem.setItemName(itemName);
             theUpdatedItem.setItemDescription(itemDescription);
@@ -106,62 +64,78 @@ public class ItemsService {
 
             itemsRepository.save(theUpdatedItem);
 
-            return  theUpdatedItem;
-        }else {
-            throw new Exception("Usuário não autorizado");
+            return theUpdatedItem;
+        }else{
+            throw new ItemAlreadyExistException();
+        }
+    }
+    public Item findItemById(UUID theItemId) {
+
+        TypedQuery<Item> theQuery = entityManager.createQuery(
+                "FROM Item WHERE itemId=:theId", Item.class);
+
+        theQuery.setParameter("theId",theItemId);
+
+        //Procura item por ID
+        try {
+            return theQuery.getSingleResult();
+        }catch (Exception e){
+            throw new ItemNotFoundException();
         }
     }
 
-    public List<Item> listAllItems() throws Exception {
+    public Item findItemByName(String theItemName){
+        TypedQuery<Item> theQuery = entityManager.createQuery(
+                "FROM Item WHERE itemName=:theName", Item.class);
+
+        theQuery.setParameter("theName",theItemName);
+        // Procura item por nome
+        try {
+            return theQuery.getSingleResult();
+        }catch (Exception e){
+            throw new ItemNotFoundException();
+        }
+
+    }
+
+    Boolean validateNameIsAvailable(String theName){
+        //Valida se o nome está disponível, false = já está em uso, true = está disponível.
+        try{
+            findItemByName(theName);
+            return false;
+        }catch (Exception e){
+            return true;
+        }
+    }
+
+    public List<Item> listAllItems() {
         TypedQuery<Item> theQuery = entityManager.createQuery(
                 "FROM Item", Item.class);
-
-        List<Item> theItems = theQuery.getResultList();
-
-        if(theItems.size() == 0){
-            throw new Exception("Nenhum Item encontrado");
+        // Lita todos os itens
+        try {
+            return theQuery.getResultList();
+        }catch (Exception e){
+            throw new ItemNotFoundException();
         }
-        return theItems;
+
     }
 
     public void deleteItemById(UUID theItemId, UUID requester) throws Exception {
-
-        if(userService.validateUserAuthorization(requester)) {
-            TypedQuery<Item> theQuery = entityManager.createQuery(
-                    "FROM Item WHERE itemId=:theId", Item.class);
-
-            theQuery.setParameter("theId", theItemId);
-
-
-            try {
-                Item theItem = theQuery.getSingleResult();
-                itemsRepository.delete(theItem);
-            } catch (Exception e) {
-                throw new Exception("Item não encontrado");
-            }
-        }
-
+        // Valida se o usuário pode realizar uma deleção
+        userService.validateUserAuthorization(requester);
+        // Instancia o item
+        Item theItem = findItemById(theItemId);
+        // Deleta o item
+        itemsRepository.delete(theItem);
     }
 
     public void deleteItemByName(String theItemName, UUID requester) throws Exception {
-
-        if(userService.validateUserAuthorization(requester)) {
-            TypedQuery<Item> theQuery = entityManager.createQuery(
-                    "FROM Item WHERE itemName=:theName", Item.class);
-
-            theQuery.setParameter("theName", theItemName);
-
-
-            try {
-                Item theItem = theQuery.getSingleResult();
-                itemsRepository.delete(theItem);
-            } catch (Exception e) {
-                throw new Exception("Item não encontrado");
-            }
-        }else {
-            throw new Exception("Usuário não autorizado");
-        }
-
+        // Valida se o usuário pode realizar uma deleção
+        userService.validateUserAuthorization(requester);
+        // Instancia o item
+        Item theItem = findItemByName(theItemName);
+        // Deleta o item
+        itemsRepository.delete(theItem);
     }
 }
 

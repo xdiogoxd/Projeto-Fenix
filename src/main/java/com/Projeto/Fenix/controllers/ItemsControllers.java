@@ -20,7 +20,7 @@ public class ItemsControllers {
     @PostMapping
     public ResponseEntity<Item> addNewItem(@RequestBody ItemsDTO itemsDTO) throws Exception {
         Item newItem = itemsService.addNewItem(itemsDTO.requester(), itemsDTO.itemName(), itemsDTO.itemDescription(), itemsDTO.itemCategory());
-        return new ResponseEntity<Item>(newItem, HttpStatus.OK);
+        return new ResponseEntity<Item>(newItem, HttpStatus.CREATED);
     }
 
     @PutMapping
@@ -41,21 +41,21 @@ public class ItemsControllers {
         return new ResponseEntity<Item>(getItem, HttpStatus.OK);
     }
 
-    @GetMapping("/name/{itemName}")
-    public ResponseEntity<Item> listItemByName(@PathVariable String itemName) throws Exception{
-        Item getItem = itemsService.findItemByName(itemName);
+    @GetMapping("/name")
+    public ResponseEntity<Item> listItemByName(@RequestBody ItemsDTO itemsDTO) throws Exception{
+        Item getItem = itemsService.findItemByName(itemsDTO.itemName());
         return new ResponseEntity<Item>(getItem, HttpStatus.OK);
     }
 
     @DeleteMapping("/id")
-    public ResponseEntity<Item> deleteItemById(@RequestBody ItemsDTO itemsDTO) throws Exception{
+    public ResponseEntity<String> deleteItemById(@RequestBody ItemsDTO itemsDTO) throws Exception{
         itemsService.deleteItemById(itemsDTO.itemId(), itemsDTO.requester());
-        return new ResponseEntity<Item>(HttpStatus.OK);
+        return new ResponseEntity<String>("Item deletado",HttpStatus.OK);
     }
 
-    @DeleteMapping("/name/{itemName}")
-    public ResponseEntity<Item> deleteItemByName(@PathVariable String itemName, @RequestBody ItemsDTO itemsDTO) throws Exception {
-        itemsService.deleteItemByName(itemName, itemsDTO.requester());
-        return new ResponseEntity<Item>(HttpStatus.OK);
+    @DeleteMapping("/name")
+    public ResponseEntity<String> deleteItemByName(@RequestBody ItemsDTO itemsDTO) throws Exception {
+        itemsService.deleteItemByName(itemsDTO.itemName(), itemsDTO.requester());
+        return new ResponseEntity<String>("Item deletado",HttpStatus.OK);
     }
 }

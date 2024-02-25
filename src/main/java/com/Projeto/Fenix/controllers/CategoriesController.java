@@ -1,10 +1,9 @@
 package com.Projeto.Fenix.controllers;
 
 import com.Projeto.Fenix.domain.items.Category;
-import com.Projeto.Fenix.domain.items.Item;
 import com.Projeto.Fenix.dtos.CategoriesDTO;
-import com.Projeto.Fenix.dtos.ItemsDTO;
 import com.Projeto.Fenix.services.CategoriesService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,17 +14,21 @@ import java.util.List;
 @RequestMapping("/categories")
 public class CategoriesController {
 
+    @Autowired
     CategoriesService categoriesService;
 
     @PostMapping
     public ResponseEntity<Category> addNewItem(@RequestBody CategoriesDTO categoriesDTO) throws Exception {
-        Category newCategory = categoriesService.addNewCategory(categoriesDTO.requester(), categoriesDTO.categoryName(), categoriesDTO.categoryDescription(),categoriesDTO.categoryIcon());
-        return new ResponseEntity<Category>(newCategory, HttpStatus.OK);
+        Category newCategory = categoriesService.addNewCategory(categoriesDTO.requester(),
+                categoriesDTO.categoryName(), categoriesDTO.categoryDescription(),categoriesDTO.categoryIcon());
+        return new ResponseEntity<Category>(newCategory, HttpStatus.CREATED);
     }
 
     @PutMapping
     public ResponseEntity<Category> updateItemByName(@RequestBody CategoriesDTO categoriesDTO) throws Exception{
-        Category updatedCategory = categoriesService.updateCategoryById(categoriesDTO.requester(), categoriesDTO.categoryId(), categoriesDTO.categoryName(), categoriesDTO.categoryDescription(), categoriesDTO.categoryIcon());
+        Category updatedCategory = categoriesService.updateCategoryById(categoriesDTO.requester(),
+                categoriesDTO.categoryId(), categoriesDTO.categoryName(), categoriesDTO.categoryDescription(),
+                categoriesDTO.categoryIcon());
         return new ResponseEntity<Category>(updatedCategory, HttpStatus.OK);
     }
 
@@ -41,21 +44,21 @@ public class CategoriesController {
         return new ResponseEntity<Category>(getCategory, HttpStatus.OK);
     }
 
-    @GetMapping("/name/{itemName}")
-    public ResponseEntity<Category> listItemByName(@PathVariable String itemName) throws Exception{
-        Category getCategory = categoriesService.findCategoryByName(itemName);
+    @GetMapping("/name")
+    public ResponseEntity<Category> listItemByName(@RequestBody CategoriesDTO categoriesDTO) throws Exception{
+        Category getCategory = categoriesService.findCategoryByName(categoriesDTO.categoryName());
         return new ResponseEntity<Category>(getCategory, HttpStatus.OK);
     }
 
     @DeleteMapping("/id")
-    public ResponseEntity<Category> deleteItemById(@RequestBody CategoriesDTO categoriesDTO) throws Exception{
+    public ResponseEntity<String> deleteItemById(@RequestBody CategoriesDTO categoriesDTO) throws Exception{
         categoriesService.deleteCategoryById(categoriesDTO.categoryId(), categoriesDTO.requester());
-        return new ResponseEntity<Category>(HttpStatus.OK);
+        return new ResponseEntity<String>("Categoria deletada",HttpStatus.OK);
     }
 
-    @DeleteMapping("/name/{itemName}")
-    public ResponseEntity<Category> deleteItemByName(@PathVariable String categoryName, @RequestBody CategoriesDTO categoriesDTO) throws Exception {
-        categoriesService.deleteCategoryByName(categoryName, categoriesDTO.requester());
-        return new ResponseEntity<Category>(HttpStatus.OK);
+    @DeleteMapping("/name")
+    public ResponseEntity<String> deleteItemByName(@RequestBody CategoriesDTO categoriesDTO) throws Exception {
+        categoriesService.deleteCategoryByName(categoriesDTO.categoryName(), categoriesDTO.requester());
+        return new ResponseEntity<String>("Categoria deletada",HttpStatus.OK);
     }
 }
