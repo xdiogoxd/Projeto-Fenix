@@ -9,7 +9,7 @@ import java.util.UUID;
 public class UuidService {
 
     @Bean
-    UUID generateUUID(){
+    public UUID generateUUID(){
         return UUID.randomUUID();
     }
 }

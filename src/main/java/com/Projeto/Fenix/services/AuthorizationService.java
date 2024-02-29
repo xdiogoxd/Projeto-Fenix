@@ -1,6 +1,7 @@
 package com.Projeto.Fenix.services;
 
-import com.Projeto.Fenix.repositories.UsersRepository;
+import com.Projeto.Fenix.exceptions.UserNotFoundException;
+import com.Projeto.Fenix.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -11,10 +12,10 @@ import org.springframework.stereotype.Service;
 public class AuthorizationService implements UserDetailsService {
 
     @Autowired
-    UsersRepository usersRepository;
+    UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return usersRepository.findUserByUserUsername(username);
+        return userRepository.findUserByUserUsername(username);
     }
 }

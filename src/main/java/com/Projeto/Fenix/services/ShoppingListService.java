@@ -4,7 +4,7 @@ import com.Projeto.Fenix.domain.items.Item;
 import com.Projeto.Fenix.domain.shoppingList.ListMembers;
 import com.Projeto.Fenix.domain.shoppingList.ShoppingList;
 import com.Projeto.Fenix.domain.shoppingList.ShoppingListDetails;
-import com.Projeto.Fenix.domain.users.Users;
+import com.Projeto.Fenix.domain.user.User;
 import com.Projeto.Fenix.repositories.ListMembersRepository;
 import com.Projeto.Fenix.repositories.ShoppingListDetailsRepository;
 import com.Projeto.Fenix.repositories.ShoppingListRepository;
@@ -62,7 +62,7 @@ public class ShoppingListService {
         ListMembers newListMember = new ListMembers();
         UUID theMemberListId = uuidService.generateUUID();
 
-        Users listOwner = userService.findUserByUserId(member);
+        User listOwner = userService.findUserByUserId(member);
 
         System.out.println(listOwner);
 
@@ -77,7 +77,7 @@ public class ShoppingListService {
     public ShoppingListDetails addItemToList(UUID requesterId, UUID shoppingListId, UUID theItemId, double quantity) throws Exception {
         // checa a role do requester nesta lista, para verificar se o usuário pode realizar a atividade ou não
 
-        Users requester = userService.findUserByUserId(requesterId);
+        User requester = userService.findUserByUserId(requesterId);
         ShoppingList shoppingList = findShoppingListById(shoppingListId);
         Item theItem = itemsService.findItemById(theItemId);
 
@@ -113,11 +113,11 @@ public class ShoppingListService {
 
     }
 
-    void removeItemToList(Users requester, String listId, Item theItem, double quantity){
+    void removeItemToList(User requester, String listId, Item theItem, double quantity){
         //shoppingListDetailsRepository.addItem(requester.getUserId(), listId, theItem.getItemId(), quantity);
     }
 
-    boolean validateShoppingListToUser(Users requester, ShoppingList shoppingList){
+    boolean validateShoppingListToUser(User requester, ShoppingList shoppingList){
 
         TypedQuery<ListMembers> theQuery = entityManager.createQuery(
                 "FROM ListMembers WHERE listId=:theList AND memberId=:theMember ", ListMembers.class);

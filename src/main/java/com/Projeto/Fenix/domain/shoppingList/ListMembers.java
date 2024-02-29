@@ -1,6 +1,6 @@
 package com.Projeto.Fenix.domain.shoppingList;
 
-import com.Projeto.Fenix.domain.users.Users;
+import com.Projeto.Fenix.domain.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,7 +29,7 @@ public class ListMembers {
 
     @ManyToOne
     @JoinColumn(name = "id_member")
-    private Users memberId;
+    private User memberId;
 
     @Column(name = "list_role")
     private String listRole;

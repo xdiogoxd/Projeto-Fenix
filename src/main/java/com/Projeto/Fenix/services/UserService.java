@@ -1,26 +1,25 @@
 package com.Projeto.Fenix.services;
 
-import com.Projeto.Fenix.domain.users.Users;
+import com.Projeto.Fenix.domain.user.UserRole;
+import com.Projeto.Fenix.domain.user.User;
 import com.Projeto.Fenix.exceptions.UserNotFoundException;
 import com.Projeto.Fenix.exceptions.UserUnauthorizedException;
 import com.Projeto.Fenix.exceptions.UsernameOrEmailAlreadyInUseException;
-import com.Projeto.Fenix.repositories.UsersRepository;
+import com.Projeto.Fenix.repositories.UserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
-import org.apache.catalina.User;
-import org.hibernate.id.uuid.UuidGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class UserService {
 
     @Autowired
-    private UsersRepository repository;
+    private UserRepository repository;
 
     @Autowired
     private UuidService uuidService;
@@ -28,46 +27,53 @@ public class UserService {
     @Autowired
     EntityManager entityManager;
 
-    public Users createNewUser(String theUsername, String thePassword, String theEmail) throws Exception{
-        Users theUser = new Users();
+    public User createNewUser(String theUsername, String thePassword, String theEmail) throws Exception{
+        User theUser = new User();
         UUID theId = uuidService.generateUUID();
+
         if((validateEmailUnique(theEmail) && validateUsernameUnique(theUsername))){
+            String encryptedPassword = new BCryptPasswordEncoder().encode(thePassword);
+
+            theUser.setUserId(theId);
+            theUser.setUserUsername(theUsername);
+            theUser.setUserPassword(encryptedPassword);
+            theUser.setUserEmail(theEmail);
+            theUser.setUserRole(UserRole.ADMIN);
+            theUser.setUserImage("");
+            theUser.setUserDisplayName("User");
+
+            System.out.println(theUser.getUserEmail());
+            return repository.save(theUser);
+        }else {
             throw new UsernameOrEmailAlreadyInUseException();
         }
-        theUser.setUserId(theId);
-        theUser.setUserUsername(theUsername);
-        theUser.setUserPassword(thePassword);
-        theUser.setUserEmail(theEmail);
-        theUser.setUserRole("User");
-        theUser.setUserImage("");
-        theUser.setUserDisplayName("User");
 
-        System.out.println(theUser.getUserEmail());
-        repository.save(theUser);
 
-        return theUser;
     }
 
 
     boolean validateEmailUnique(String theEmail) throws Exception {
-        System.out.println("checking email " + theEmail);
-        if (findUserByUserEmail(theEmail) != null){
-            return true;
-        }else {
+
+        try{
+            findUserByUserEmail(theEmail);
             return false;
+        }catch (Exception e){
+            return true;
         }
     }
 
     boolean validateUsernameUnique(String theUsername) throws Exception {
-        if (findUserByUserUsername(theUsername) == null){
-            return true;
-        }else {
+
+        try{
+            findUserByUserUsername(theUsername);
             return false;
+        }catch (Exception e){
+            return true;
         }
     }
 
     void validateUserAuthorization(UUID requesterId) throws Exception {
-        Users requester = findUserByUserId(requesterId);
+        User requester = findUserByUserId(requesterId);
 
         System.out.println("id: "+ requester.getUserId()+" role: " +requester.getUserRole());
 
@@ -77,41 +83,55 @@ public class UserService {
     }
 
 
-    Users findUserByUserEmail(String theEmail){
-        TypedQuery<Users> theQuery = entityManager.createQuery(
-                "FROM Users WHERE userEmail=:theData", Users.class);
+    User findUserByUserEmail(String theEmail){
+        System.out.println(theEmail);
+        TypedQuery<User> theQuery = entityManager.createQuery(
+                "FROM User WHERE userEmail=:theData", User.class);
 
         theQuery.setParameter("theData", theEmail);
+
         try {
+            System.out.println(theQuery.getSingleResult());
             return theQuery.getSingleResult();
         }catch (Exception e){
-            return null;
+            throw new UserNotFoundException();
         }
-//        if(test != null){
-//            System.out.println("test");
-//            return test;
-//
-//        }
-//        System.out.println("test1email");
-//
-//        return null;
     }
 
-    Users findUserByUserUsername(String theUsername)throws Exception{
-        TypedQuery<Users> theQuery = entityManager.createQuery(
-                "FROM Users WHERE userUsername=:theData", Users.class);
+    User findUserByUserUsername(String theUsername)throws Exception{
+        TypedQuery<User> theQuery = entityManager.createQuery(
+                "FROM User WHERE userUsername=:theData", User.class);
 
         theQuery.setParameter("theData", theUsername);
-        if(theQuery.getSingleResult().getUserUsername() == null){
+
+        try{
+            System.out.println(theUsername+theQuery.getSingleResult());
+            return theQuery.getSingleResult();
+        }catch (Exception e) {
+            System.out.println(e);
+            throw new Exception(e);
+        }
+
+    }
+
+    UserDetails findUserByUserUsernameSS(String theUsername)throws Exception{
+        TypedQuery<User> theQuery = entityManager.createQuery(
+                "FROM Users WHERE userUsername=:theData", User.class);
+
+        theQuery.setParameter("theData", theUsername);
+
+        try{
+            System.out.println(theQuery.getSingleResult());
+            return theQuery.getSingleResult();
+        }catch (Exception e) {
             throw new UserNotFoundException();
         }
 
-        return theQuery.getSingleResult();
     }
 
-    Users findUserByUserId(UUID theId)throws Exception {
-        TypedQuery<Users> theQuery = entityManager.createQuery(
-                "FROM Users WHERE userId=:theData", Users.class);
+    User findUserByUserId(UUID theId)throws Exception {
+        TypedQuery<User> theQuery = entityManager.createQuery(
+                "FROM Users WHERE userId=:theData", User.class);
 
         theQuery.setParameter("theData", theId);
 
