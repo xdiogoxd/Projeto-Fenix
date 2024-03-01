@@ -32,6 +32,6 @@ public class ListMembers {
     private User memberId;
 
     @Column(name = "list_role")
-    private String listRole;
+    private ListMemberRoles listRole;
 
 }

@@ -1,6 +1,7 @@
 package com.Projeto.Fenix.services;
 
 import com.Projeto.Fenix.domain.items.Item;
+import com.Projeto.Fenix.domain.shoppingList.ListMemberRoles;
 import com.Projeto.Fenix.domain.shoppingList.ListMembers;
 import com.Projeto.Fenix.domain.shoppingList.ShoppingList;
 import com.Projeto.Fenix.domain.shoppingList.ShoppingListDetails;
@@ -37,9 +38,12 @@ public class ShoppingListService {
     @Autowired
     private EntityManager entityManager;
 
+    @Autowired
+    ListMembersService listMembersService;
 
 
-    public ShoppingList createShoppingList(UUID owner, String listName) throws Exception {
+
+    public ShoppingList createShoppingList(User theUser, String listName) throws Exception {
         ShoppingList newShoppingList = new ShoppingList();
 
         UUID theListId = uuidService.generateUUID();
@@ -54,25 +58,10 @@ public class ShoppingListService {
         shoppingListRepository.save(newShoppingList);
 
         //Cria listMember na tabela ListMembers
-        addNewListMember(owner,"Admin", newShoppingList);
+        listMembersService.addListMemberOwner(theUser,ListMemberRoles.ADMIN, newShoppingList);
         return newShoppingList;
     }
 
-    void addNewListMember(UUID member, String role,ShoppingList theShoppingList) throws Exception {
-        ListMembers newListMember = new ListMembers();
-        UUID theMemberListId = uuidService.generateUUID();
-
-        User listOwner = userService.findUserByUserId(member);
-
-        System.out.println(listOwner);
-
-        newListMember.setListMembersId(theMemberListId);
-        newListMember.setListId(theShoppingList);
-        newListMember.setMemberId(listOwner);
-        newListMember.setListRole(role);
-
-        listMembersRepository.save(newListMember);
-    }
 
     public ShoppingListDetails addItemToList(UUID requesterId, UUID shoppingListId, UUID theItemId, double quantity) throws Exception {
         // checa a role do requester nesta lista, para verificar se o usuário pode realizar a atividade ou não
@@ -127,7 +116,7 @@ public class ShoppingListService {
 
         ListMembers theMember = theQuery.getSingleResult();
 
-        if (theMember.getListRole() != "Admin"){
+        if (theMember.getListRole() != ListMemberRoles.ADMIN){
             return false;
         }else {
             return true;

@@ -40,10 +40,10 @@ public class AuthenticationController {
         var auth = this.authenticationManager.authenticate(usernamePassword);
 
         var token = tokenService.generateToken((User) auth.getPrincipal());
-        System.out.println(token.toString());
 
         return ResponseEntity.ok(new LoginResponseDTO(token));
     }
+
 
     @PostMapping("/register")
     public ResponseEntity<User> createNewUser(@RequestBody UserDTO userDTO) throws Exception {

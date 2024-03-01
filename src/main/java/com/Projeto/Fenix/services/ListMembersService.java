@@ -1,0 +1,81 @@
+package com.Projeto.Fenix.services;
+
+import com.Projeto.Fenix.domain.shoppingList.ListMemberRoles;
+import com.Projeto.Fenix.domain.shoppingList.ListMembers;
+import com.Projeto.Fenix.domain.shoppingList.ShoppingList;
+import com.Projeto.Fenix.domain.user.User;
+import com.Projeto.Fenix.exceptions.ListMemberNotFound;
+import com.Projeto.Fenix.exceptions.UserNotAuthorized;
+import com.Projeto.Fenix.repositories.ListMembersRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.UUID;
+
+
+@Service
+public class ListMembersService {
+
+    @Autowired
+    ListMembersRepository listMembersRepository;
+
+    @Autowired
+    ShoppingListService shoppingListService;
+
+    @Autowired
+    UuidService uuidService;
+
+    @Autowired
+    EntityManager entityManager;
+
+    void addListMemberOwner(User listOwner, ListMemberRoles role, ShoppingList theShoppingList) {
+        ListMembers newListMember = new ListMembers();
+        UUID theMemberListId = uuidService.generateUUID();
+
+        newListMember.setListMembersId(theMemberListId);
+        newListMember.setListId(theShoppingList);
+        newListMember.setMemberId(listOwner);
+        newListMember.setListRole(role);
+
+        listMembersRepository.save(newListMember);
+    }
+
+    public void addListMember(User listOwner,UUID newMember, ListMemberRoles role, UUID shoppingListId) throws Exception {
+        ShoppingList theShoppingList = shoppingListService.findShoppingListById(shoppingListId);
+
+
+
+        ListMembers newListMember = new ListMembers();
+        UUID theMemberListId = uuidService.generateUUID();
+
+        newListMember.setListMembersId(theMemberListId);
+        newListMember.setListId(theShoppingList);
+        newListMember.setMemberId(listOwner);
+        newListMember.setListRole(role);
+
+        listMembersRepository.save(newListMember);
+    }
+
+    void validateUserAuthorization(User requester, UUID listId){
+        ListMembers theMember = findMemberByList(requester.getUserId(), listId);
+        if(!theMember.getListRole().equals(ListMemberRoles.ADMIN)){
+            throw new UserNotAuthorized();
+        }
+    }
+
+    ListMembers findMemberByList(UUID memberId, UUID listId){
+        TypedQuery<ListMembers> theQuery = entityManager.createQuery(
+                "FROM ListMembers WHERE MemberId=:memberId, ListId=:theList", ListMembers.class);
+
+        theQuery.setParameter("memberId", memberId);
+        theQuery.setParameter("theList", listId);
+
+        try {
+            return theQuery.getSingleResult();
+        }catch (Exception e){
+            throw new ListMemberNotFound();
+        }
+    }
+}

@@ -5,9 +5,11 @@ import com.Projeto.Fenix.domain.user.User;
 import com.Projeto.Fenix.exceptions.UserNotFoundException;
 import com.Projeto.Fenix.exceptions.UserUnauthorizedException;
 import com.Projeto.Fenix.exceptions.UsernameOrEmailAlreadyInUseException;
+import com.Projeto.Fenix.infra.security.TokenService;
 import com.Projeto.Fenix.repositories.UserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -19,13 +21,16 @@ import java.util.UUID;
 public class UserService {
 
     @Autowired
-    private UserRepository repository;
+    UserRepository userRepository;
 
     @Autowired
     private UuidService uuidService;
 
     @Autowired
     EntityManager entityManager;
+
+    @Autowired
+    TokenService tokenService;
 
     public User createNewUser(String theUsername, String thePassword, String theEmail) throws Exception{
         User theUser = new User();
@@ -43,7 +48,7 @@ public class UserService {
             theUser.setUserDisplayName("User");
 
             System.out.println(theUser.getUserEmail());
-            return repository.save(theUser);
+            return userRepository.save(theUser);
         }else {
             throw new UsernameOrEmailAlreadyInUseException();
         }
@@ -140,5 +145,22 @@ public class UserService {
         } catch (Exception e) {
             throw new UserNotFoundException();
         }
+    }
+
+    public User findUserByToken(HttpServletRequest request){
+        var token = this.recoverToken(request);
+
+        var username = tokenService.validateToken(token);
+        User theUser = userRepository.findUserByUserUsername(username);
+        return theUser;
+
+    }
+
+    private String recoverToken(HttpServletRequest request){
+        var authHeader = request.getHeader("Authorization");
+        if(authHeader == null){
+            return null;
+        }
+        return authHeader.replace("Bearer ", "");
     }
 }
