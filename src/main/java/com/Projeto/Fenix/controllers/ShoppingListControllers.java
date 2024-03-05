@@ -1,20 +1,15 @@
 package com.Projeto.Fenix.controllers;
 
 import com.Projeto.Fenix.domain.shoppingList.ShoppingList;
-import com.Projeto.Fenix.domain.shoppingList.ShoppingListDetails;
 import com.Projeto.Fenix.domain.user.User;
-import com.Projeto.Fenix.dtos.ListMembersDTO;
 import com.Projeto.Fenix.dtos.ShoppingListDTO;
-import com.Projeto.Fenix.dtos.ShoppingListDetailsDTO;
-import com.Projeto.Fenix.infra.security.TokenService;
-import com.Projeto.Fenix.services.ListMembersService;
+import com.Projeto.Fenix.services.ShoppingListMembersService;
 import com.Projeto.Fenix.services.ShoppingListService;
 import com.Projeto.Fenix.services.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,7 +24,7 @@ public class ShoppingListControllers {
     @Autowired
     UserService  userService;
 
-    ListMembersService listMembersService;
+    ShoppingListMembersService shoppingListMembersService;
 
     @PostMapping
     public ResponseEntity<ShoppingList> createShoppingList(HttpServletRequest request,
@@ -57,7 +52,7 @@ public class ShoppingListControllers {
         return new ResponseEntity<ShoppingList>(theShoppingList,HttpStatus.OK);
     }
 
-    @PutMapping("/id")
+    @PatchMapping("/id")
     public ResponseEntity<ShoppingList> updateShoppingListById(HttpServletRequest request,
                                                                @RequestBody ShoppingListDTO shoppingListDTO){
         User theUser = userService.findUserByToken(request);
@@ -79,26 +74,6 @@ public class ShoppingListControllers {
         return new ResponseEntity<String>("ShoppingList deleted",HttpStatus.OK);
     }
 
-    @PostMapping("/id/members")
-    public ResponseEntity<String> addNewListMember(HttpServletRequest request, @RequestBody ListMembersDTO listMembersDTO) throws Exception {
-
-        User theOwner = userService.findUserByToken(request);
-
-        listMembersService.addListMember(theOwner, listMembersDTO.newMember(), listMembersDTO.role(), listMembersDTO.shoppingListId());
-
-    }
-
-
-
-
-
-    @PostMapping
-    @RequestMapping("/item")
-    public ResponseEntity<ShoppingListDetails> addNewItem(@RequestBody ShoppingListDetailsDTO shoppingListDetailsDTO) throws Exception {
-        ShoppingListDetails newShoppingListDetails = shoppingListService.addItemToList(shoppingListDetailsDTO.requesterId(),
-                shoppingListDetailsDTO.itemId(), shoppingListDetailsDTO.itemId(), shoppingListDetailsDTO.quantity());
-        return new ResponseEntity<ShoppingListDetails>(newShoppingListDetails,HttpStatus.OK);
-    }
 
 
 }

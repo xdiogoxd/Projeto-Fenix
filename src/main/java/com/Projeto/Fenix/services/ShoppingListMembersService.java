@@ -12,11 +12,12 @@ import jakarta.persistence.TypedQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 
 @Service
-public class ListMembersService {
+public class ShoppingListMembersService {
 
     @Autowired
     ListMembersRepository listMembersRepository;
@@ -77,5 +78,17 @@ public class ListMembersService {
         }catch (Exception e){
             throw new ListMemberNotFound();
         }
+    }
+
+    public void updateListMemberAccess(User theOwner, UUID member, ListMemberRoles role) {
+    }
+
+    public void deleteListMemberAccess(User theOwner, UUID member) {
+    }
+
+    public List<ListMembers> listAllMembersByList(User requester, UUID shoppingListId) {
+    }
+
+    public List<ListMembers> listAllListsByMembers(User requester, UUID member) {
     }
 }
