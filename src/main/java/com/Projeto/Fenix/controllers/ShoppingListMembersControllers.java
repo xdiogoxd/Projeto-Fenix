@@ -56,7 +56,7 @@ public class ShoppingListMembersControllers {
     public ResponseEntity<List<ListMembers>> listAllListsByMember(HttpServletRequest request, @RequestBody ListMembersDTO listMembersDTO){
         User requester = userService.findUserByToken(request);
 
-        List<ListMembers> theLists = shoppingListMembersService.listAllListsByMembers(requester, listMembersDTO.member());
+        List<ListMembers> theLists = shoppingListMembersService.listAllListsByMembers(requester);
 
         return new ResponseEntity<List<ListMembers>>(theLists, HttpStatus.OK);
     }

@@ -45,10 +45,10 @@ public class ShoppingListControllers {
 
     @GetMapping("/id")
     public ResponseEntity<ShoppingList> listShoppingListById(HttpServletRequest request,
-                                                             @RequestBody ShoppingListDTO shoppingListDTO){
+                                                             @RequestBody ShoppingListDTO shoppingListDTO) throws Exception {
         User theUser = userService.findUserByToken(request);
 
-        ShoppingList theShoppingList = shoppingListService.findListById(theUser, shoppingListDTO.shoppingListId());
+        ShoppingList theShoppingList = shoppingListService.findShoppingListById(theUser, shoppingListDTO.shoppingListId());
         return new ResponseEntity<ShoppingList>(theShoppingList,HttpStatus.OK);
     }
 

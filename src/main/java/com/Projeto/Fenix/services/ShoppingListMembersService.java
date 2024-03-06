@@ -5,6 +5,7 @@ import com.Projeto.Fenix.domain.shoppingList.ListMembers;
 import com.Projeto.Fenix.domain.shoppingList.ShoppingList;
 import com.Projeto.Fenix.domain.user.User;
 import com.Projeto.Fenix.exceptions.ListMemberNotFound;
+import com.Projeto.Fenix.exceptions.ListNotFound;
 import com.Projeto.Fenix.exceptions.UserNotAuthorized;
 import com.Projeto.Fenix.repositories.ListMembersRepository;
 import jakarta.persistence.EntityManager;
@@ -44,7 +45,7 @@ public class ShoppingListMembersService {
     }
 
     public void addListMember(User listOwner,UUID newMember, ListMemberRoles role, UUID shoppingListId) throws Exception {
-        ShoppingList theShoppingList = shoppingListService.findShoppingListById(shoppingListId);
+        ShoppingList theShoppingList = shoppingListService.findShoppingListById(listOwner, shoppingListId);
 
 
 
@@ -87,8 +88,19 @@ public class ShoppingListMembersService {
     }
 
     public List<ListMembers> listAllMembersByList(User requester, UUID shoppingListId) {
+
     }
 
-    public List<ListMembers> listAllListsByMembers(User requester, UUID member) {
+    public List<ListMembers> listAllListsByMembers(User requester) {
+        TypedQuery<ListMembers> theQuery = entityManager.createQuery(
+                "FROM ListMembers where memberId=:theData", ListMembers.class);
+
+        theQuery.setParameter("theData", requester.getUserId());
+
+        try {
+            return theQuery.getResultList();
+        }catch(Exception exception) {
+            throw new ListNotFound();
+        }
     }
 }

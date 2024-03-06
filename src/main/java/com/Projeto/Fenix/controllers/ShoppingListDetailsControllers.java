@@ -29,7 +29,7 @@ public class ShoppingListDetailsControllers {
 
         ShoppingListDetails newShoppingListDetails = shoppingListDetailsService.addItemToList(requester, shoppingListDetailsDTO.itemId(),
                 shoppingListDetailsDTO.listId(), shoppingListDetailsDTO.quantity());
-        return new ResponseEntity<ShoppingListDetails>(newShoppingListDetails, HttpStatus.OK);
+        return new ResponseEntity<>(newShoppingListDetails, HttpStatus.OK);
     }
 
     @GetMapping()
@@ -40,7 +40,7 @@ public class ShoppingListDetailsControllers {
 
         List<ShoppingListDetails> allItemsByListing = shoppingListDetailsService.listAllItemsById(requester, shoppingListDetailsDTO.listId());
 
-        return new ResponseEntity<List<ShoppingListDetails>>(allItemsByListing,HttpStatus.OK);
+        return new ResponseEntity<>(allItemsByListing, HttpStatus.OK);
     }
 
     @DeleteMapping()
@@ -51,7 +51,7 @@ public class ShoppingListDetailsControllers {
         shoppingListDetailsService.deleItemFromList(requester, shoppingListDetailsDTO.itemId(),
                 shoppingListDetailsDTO.listId(), shoppingListDetailsDTO.quantity());
 
-        return new ResponseEntity<String>("item removido", HttpStatus.OK);
+        return new ResponseEntity<>("Item removido", HttpStatus.OK);
     }
 
 }

@@ -1,10 +1,7 @@
 package com.Projeto.Fenix.services;
 
 import com.Projeto.Fenix.domain.items.Item;
-import com.Projeto.Fenix.domain.shoppingList.ListMemberRoles;
-import com.Projeto.Fenix.domain.shoppingList.ListMembers;
-import com.Projeto.Fenix.domain.shoppingList.ShoppingList;
-import com.Projeto.Fenix.domain.shoppingList.ShoppingListDetails;
+import com.Projeto.Fenix.domain.shoppingList.*;
 import com.Projeto.Fenix.domain.user.User;
 import com.Projeto.Fenix.repositories.ShoppingListDetailsRepository;
 import jakarta.persistence.EntityManager;
@@ -36,7 +33,7 @@ public class ShoppingListDetailsService {
     public ShoppingListDetails addItemToList(User requester, UUID shoppingListId, UUID theItemId, double quantity) throws Exception {
         // checa a role do requester nesta lista, para verificar se o usuário pode realizar a atividade ou não
 
-        ShoppingList shoppingList = shoppingListService.findShoppingListById(shoppingListId);
+        ShoppingList shoppingList = shoppingListService.findShoppingListById(requester, shoppingListId);
         Item theItem = itemsService.findItemById(theItemId);
 
         if (validateShoppingListToUser(requester, shoppingList)){
@@ -92,10 +89,10 @@ public class ShoppingListDetailsService {
         }
     }
 
-    ShoppingListDetails updateItems(ShoppingList theList, Item theItem, double quantity, String action) throws Exception {
+    ShoppingListDetails updateItems(ShoppingList theList, Item theItem, double quantity, EnumShoppingListMethod action) throws Exception {
 
         if(validateItemAlreadyExist(theItem, theList)){
-            if(action == "add"){
+            if(action.equals(EnumShoppingListMethod.ADD)){
                 TypedQuery<ShoppingListDetails> theQuery = entityManager.createQuery(
                         "FROM ShoppingListDetails WHERE listId=:theList AND itemId=:theItem", ShoppingListDetails.class);
 
@@ -110,7 +107,7 @@ public class ShoppingListDetailsService {
 
                 return theShoppingListDetails;
 
-            }else if (action == "remove"){
+            }else if (action.equals(EnumShoppingListMethod.REMOVE){
                 TypedQuery<ShoppingListDetails> theQuery = entityManager.createQuery(
                         "FROM ShoppingListDetails WHERE listId=:theList AND itemId=:theItem", ShoppingListDetails.class);
 
