@@ -13,6 +13,7 @@ import jakarta.persistence.TypedQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,26 +28,15 @@ public class ShoppingListMembersService {
     ShoppingListService shoppingListService;
 
     @Autowired
+    UserService userService;
+
+    @Autowired
     UuidService uuidService;
 
     @Autowired
     EntityManager entityManager;
 
     void addListMemberOwner(User listOwner, ListMemberRoles role, ShoppingList theShoppingList) {
-        ListMembers newListMember = new ListMembers();
-        UUID theMemberListId = uuidService.generateUUID();
-
-        newListMember.setListMembersId(theMemberListId);
-        newListMember.setListId(theShoppingList);
-        newListMember.setMemberId(listOwner);
-        newListMember.setListRole(role);
-
-        listMembersRepository.save(newListMember);
-    }
-
-    public void addListMember(User listOwner,UUID newMember, ListMemberRoles role, UUID shoppingListId) throws Exception {
-        ShoppingList theShoppingList = shoppingListService.findShoppingListById(listOwner, shoppingListId);
-
 
 
         ListMembers newListMember = new ListMembers();
@@ -60,9 +50,35 @@ public class ShoppingListMembersService {
         listMembersRepository.save(newListMember);
     }
 
-    void validateUserAuthorization(User requester, UUID listId){
+    public void addListMember(User requester,UUID newMember, ListMemberRoles role, UUID shoppingListId) throws Exception {
+        //Valida se a solicitação é de criação de um admin ou coadmin, caso seja, apenas um admin pode fazer essa ação
+        if (role == ListMemberRoles.ADMIN || role == ListMemberRoles.CO_ADMIN){
+            validateUserAuthorization(requester, shoppingListId, ListMemberRoles.ADMIN, ListMemberRoles.ADMIN);
+        }
+        //Valida autorização do usuário
+        validateUserAuthorization(requester, shoppingListId, ListMemberRoles.ADMIN, ListMemberRoles.CO_ADMIN);
+
+
+        //Carrega shopping list e e novo membro e cria o novo membro para a lista
+        ShoppingList theShoppingList = shoppingListService.findShoppingListById(requester, shoppingListId);
+
+        User theNewMember = userService.findUserByUserId(newMember);
+
+        ListMembers newListMember = new ListMembers();
+        UUID theMemberListId = uuidService.generateUUID();
+
+        newListMember.setListMembersId(theMemberListId);
+        newListMember.setListId(theShoppingList);
+        newListMember.setMemberId(theNewMember);
+        newListMember.setListRole(role);
+
+        listMembersRepository.save(newListMember);
+    }
+
+    void validateUserAuthorization(User requester, UUID listId, ListMemberRoles theMainRole, ListMemberRoles theSecondaryRole){
+        // valida autorização de acordo com os parametros enviados
         ListMembers theMember = findMemberByList(requester.getUserId(), listId);
-        if(!theMember.getListRole().equals(ListMemberRoles.ADMIN)){
+        if((!theMember.getListRole().equals(theMainRole))||(!theMember.getListRole().equals(theSecondaryRole))){
             throw new UserNotAuthorized();
         }
     }
@@ -81,13 +97,44 @@ public class ShoppingListMembersService {
         }
     }
 
-    public void updateListMemberAccess(User theOwner, UUID member, ListMemberRoles role) {
+    public void updateListMemberAccess(User requester, UUID member, UUID shoppingListId, ListMemberRoles role) {
+        validateUserAuthorization(requester, shoppingListId, ListMemberRoles.ADMIN, ListMemberRoles.CO_ADMIN);
+
+        ListMembers theAccess = findMemberByList(member, shoppingListId);
+
+        theAccess.setListRole(role);
+
+        entityManager.merge(role);
     }
 
-    public void deleteListMemberAccess(User theOwner, UUID member) {
+    public void deleteListMemberAccess(User requester, UUID memberId, UUID listId) {
+        validateUserAuthorization(requester, listId, ListMemberRoles.ADMIN, ListMemberRoles.CO_ADMIN);
+
+        ListMembers theAccess = findMemberByList(memberId, listId);
+
+        entityManager.remove(theAccess);
     }
 
-    public List<ListMembers> listAllMembersByList(User requester, UUID shoppingListId) {
+    public List<User> listAllMembersByList(User requester, UUID listId) {
+        validateUserAuthorization(requester, listId, ListMemberRoles.ADMIN, ListMemberRoles.CO_ADMIN);
+
+        TypedQuery<ListMembers> theQuery = entityManager.createQuery(
+                "FROM ListMembers where listId =:theData", ListMembers.class);
+
+        theQuery.setParameter("theData", listId);
+
+        List<ListMembers> theMembers = theQuery.getResultList();
+        List<User> allUsers = new ArrayList<>();
+
+        if (theMembers.size()==0){
+            throw new ListMemberNotFound();
+        }
+
+        for (int i = 0;theMembers.size() < i; i++){
+            allUsers.add(userService.findUserByIdPublicInfo(theMembers.get(i).getMemberId().getUserId()));
+        }
+
+        return allUsers;
 
     }
 

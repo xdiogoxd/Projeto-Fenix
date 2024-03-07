@@ -163,4 +163,19 @@ public class UserService {
         }
         return authHeader.replace("Bearer ", "");
     }
+
+    public User findUserByIdPublicInfo(UUID userId){
+        TypedQuery<User> theQuery = entityManager.createQuery(
+                "userId, userDisplayName FROM User where userId=:theData",User.class);
+        theQuery.setParameter("theData",userId);
+
+        try {
+            return theQuery.getSingleResult();
+        }catch (Exception e){
+            throw new UserNotFoundException();
+        }
+
+    }
+
+
 }

@@ -36,7 +36,7 @@ public class ShoppingListControllers {
     }
 
     @GetMapping
-    public ResponseEntity<List<ShoppingList>> listAllShoppingListsByUser(HttpServletRequest request){
+    public ResponseEntity<List<ShoppingList>> listAllShoppingListsByUser(HttpServletRequest request) throws Exception {
         User theUser = userService.findUserByToken(request);
 
         List<ShoppingList> theList = shoppingListService.listAllShoppingListsByUser(theUser);
@@ -54,7 +54,7 @@ public class ShoppingListControllers {
 
     @PatchMapping("/id")
     public ResponseEntity<ShoppingList> updateShoppingListById(HttpServletRequest request,
-                                                               @RequestBody ShoppingListDTO shoppingListDTO){
+                                                               @RequestBody ShoppingListDTO shoppingListDTO) throws Exception {
         User theUser = userService.findUserByToken(request);
 
         ShoppingList theShoppingList = shoppingListService.updateShoppingListById(theUser,shoppingListDTO.shoppingListId(),
@@ -67,7 +67,7 @@ public class ShoppingListControllers {
 
     @DeleteMapping("/id")
     public ResponseEntity<String> deleteShoppingListById(HttpServletRequest request,
-                                                             @RequestBody ShoppingListDTO shoppingListDTO){
+                                                             @RequestBody ShoppingListDTO shoppingListDTO) throws Exception {
         User theUser = userService.findUserByToken(request);
 
         shoppingListService.deleteShoppingListById(theUser, shoppingListDTO.shoppingListId());

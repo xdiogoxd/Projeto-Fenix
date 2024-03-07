@@ -30,8 +30,13 @@ public class ShoppingListDetailsService {
     @Autowired
     UuidService uuidService;
 
+    @Autowired
+    ShoppingListMembersService shoppingListMembersService;
+
     public ShoppingListDetails addItemToList(User requester, UUID shoppingListId, UUID theItemId, double quantity) throws Exception {
         // checa a role do requester nesta lista, para verificar se o usuário pode realizar a atividade ou não
+        shoppingListMembersService.validateUserAuthorization(requester, shoppingListId, ListMemberRoles.ADMIN, ListMemberRoles.CO_ADMIN);
+
 
         ShoppingList shoppingList = shoppingListService.findShoppingListById(requester, shoppingListId);
         Item theItem = itemsService.findItemById(theItemId);
@@ -39,7 +44,7 @@ public class ShoppingListDetailsService {
         if (validateShoppingListToUser(requester, shoppingList)){
 
             if(validateItemAlreadyExist(theItem, shoppingList) ){
-                ShoppingListDetails theResult = updateItems(shoppingList, theItem, quantity, "add");
+                ShoppingListDetails theResult = updateItems(shoppingList, theItem, quantity, EnumShoppingListMethod.ADD);
                 return theResult;
             }else {
                 ShoppingListDetails theResult = addNewItemToList(shoppingList, theItem, quantity);

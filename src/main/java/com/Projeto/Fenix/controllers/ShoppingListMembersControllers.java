@@ -36,20 +36,20 @@ public class ShoppingListMembersControllers {
     @PatchMapping()
     public ResponseEntity<String> updateMemberAccess(HttpServletRequest  request, @RequestBody ListMembersDTO  listMembersDTO){
 
-        User theOwner = userService.findUserByToken(request);
+        User requester = userService.findUserByToken(request);
 
-        shoppingListMembersService.updateListMemberAccess(theOwner, listMembersDTO.member(), listMembersDTO.role());
+        shoppingListMembersService.updateListMemberAccess(requester, listMembersDTO.member(), listMembersDTO.shoppingListId(), listMembersDTO.role());
 
         return new ResponseEntity<String>("Acesso do membro atualizado com sucesso!", HttpStatus.OK);
     }
 
     @GetMapping()
-    public ResponseEntity<List<ListMembers>> listMembersByList(HttpServletRequest request, @RequestBody ListMembersDTO listMembersDTO){
+    public ResponseEntity<List<User>> listMembersByList(HttpServletRequest request, @RequestBody ListMembersDTO listMembersDTO){
         User requester = userService.findUserByToken(request);
 
-        List<ListMembers> theMembers = shoppingListMembersService.listAllMembersByList(requester, listMembersDTO.shoppingListId());
+        List<User> theMembers = shoppingListMembersService.listAllMembersByList(requester, listMembersDTO.shoppingListId());
 
-        return new ResponseEntity<List<ListMembers>>(theMembers, HttpStatus.OK);
+        return new ResponseEntity<>(theMembers, HttpStatus.OK);
     }
 
     @GetMapping()
@@ -66,7 +66,7 @@ public class ShoppingListMembersControllers {
 
         User theOwner = userService.findUserByToken(request);
 
-        shoppingListMembersService.deleteListMemberAccess(theOwner, listMembersDTO.member());
+        shoppingListMembersService.deleteListMemberAccess(theOwner, listMembersDTO.member(), listMembersDTO.shoppingListId());
 
         return new ResponseEntity<String>("Acesso deletado com sucesso", HttpStatus.OK);
     }
