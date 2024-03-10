@@ -3,12 +3,14 @@ package com.Projeto.Fenix.services;
 import com.Projeto.Fenix.domain.items.Item;
 import com.Projeto.Fenix.domain.shoppingList.*;
 import com.Projeto.Fenix.domain.user.User;
+import com.Projeto.Fenix.exceptions.ItemNotFoundException;
 import com.Projeto.Fenix.repositories.ShoppingListDetailsRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -112,7 +114,7 @@ public class ShoppingListDetailsService {
 
                 return theShoppingListDetails;
 
-            }else if (action.equals(EnumShoppingListMethod.REMOVE){
+            }else if (action.equals(EnumShoppingListMethod.REMOVE)){
                 TypedQuery<ShoppingListDetails> theQuery = entityManager.createQuery(
                         "FROM ShoppingListDetails WHERE listId=:theList AND itemId=:theItem", ShoppingListDetails.class);
 
@@ -156,10 +158,45 @@ public class ShoppingListDetailsService {
         throw new Exception("Item já existe na lista");
     }
 
+    public List<ShoppingListDetailsView> listAllItemsByListId(User requester, UUID listId) throws Exception {
+        ShoppingList theList = shoppingListService.findShoppingListById(requester, listId);
 
-    public List<ShoppingListDetails> listAllItemsById(User requester, UUID listId) {
+        TypedQuery<ShoppingListDetails> theQuery = entityManager.createQuery(
+                "FROM ShoppingListDetails where listId =:theData", ShoppingListDetails.class);
+
+        theQuery.setParameter("theData",theList.getListId());
+
+        List<ShoppingListDetails> allListItems = theQuery.getResultList();
+
+        List<ShoppingListDetailsView> theItems = new ArrayList<>();
+
+        TypedQuery<Item> theItemQuery = entityManager.createQuery("FROM Item where itemId=:theItemId",Item.class);
+
+        if (allListItems.size() == 0){
+            throw new ItemNotFoundException();
+        }
+
+        for(int i = 0; allListItems.size() < i; i++){
+            theItemQuery.setParameter("theItemId",allListItems.get(i).getItemId());
+
+            Item theItem = theItemQuery.getSingleResult();
+
+            ShoppingListDetailsView theItemDetails = new ShoppingListDetailsView(theItem.getItemName(),allListItems.get(i).getItemQuantity(), theItem.getItemImage());
+
+            theItems.add(theItemDetails);
+        }
+
+        return theItems;
+
+
     }
 
-    public void deleItemFromList(User requester, UUID itemId, UUID listId, double quantity) {
+    public void deleItemFromList(User requester, UUID itemId, UUID listId, double quantity) throws Exception {
+        ShoppingList theList = shoppingListService.findShoppingListById(requester, listId);
+        Item theItem = itemsService.findItemById(itemId);
+        shoppingListMembersService.validateUserAuthorization(requester, listId, ListMemberRoles.ADMIN, ListMemberRoles.CO_ADMIN);
+
+
+        updateItems(theList, theItem, quantity, EnumShoppingListMethod.REMOVE);
     }
 }

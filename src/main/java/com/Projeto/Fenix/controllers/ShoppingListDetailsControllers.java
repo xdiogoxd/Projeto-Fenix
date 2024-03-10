@@ -1,6 +1,7 @@
 package com.Projeto.Fenix.controllers;
 
 import com.Projeto.Fenix.domain.shoppingList.ShoppingListDetails;
+import com.Projeto.Fenix.domain.shoppingList.ShoppingListDetailsView;
 import com.Projeto.Fenix.domain.user.User;
 import com.Projeto.Fenix.dtos.ShoppingListDetailsDTO;
 import com.Projeto.Fenix.services.ShoppingListDetailsService;
@@ -33,18 +34,18 @@ public class ShoppingListDetailsControllers {
     }
 
     @GetMapping()
-    public ResponseEntity<List<ShoppingListDetails>> listAllItemsByList(HttpServletRequest request, @RequestBody
-                                                                        ShoppingListDetailsDTO shoppingListDetailsDTO){
+    public ResponseEntity<List<ShoppingListDetailsView>> listAllItemsByList(HttpServletRequest request, @RequestBody
+                                                                        ShoppingListDetailsDTO shoppingListDetailsDTO) throws Exception {
 
         User requester = userService.findUserByToken(request);
 
-        List<ShoppingListDetails> allItemsByListing = shoppingListDetailsService.listAllItemsById(requester, shoppingListDetailsDTO.listId());
+        List<ShoppingListDetailsView> allItemsByListing = shoppingListDetailsService.listAllItemsByListId(requester, shoppingListDetailsDTO.listId());
 
         return new ResponseEntity<>(allItemsByListing, HttpStatus.OK);
     }
 
     @DeleteMapping()
-    public ResponseEntity<String> updateItem(HttpServletRequest request, @RequestBody ShoppingListDetailsDTO shoppingListDetailsDTO){
+    public ResponseEntity<String> updateItem(HttpServletRequest request, @RequestBody ShoppingListDetailsDTO shoppingListDetailsDTO) throws Exception {
         User requester = userService.findUserByToken(request);
 
 
