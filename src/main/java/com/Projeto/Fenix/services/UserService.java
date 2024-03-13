@@ -24,7 +24,7 @@ public class UserService {
     UserRepository userRepository;
 
     @Autowired
-    private UuidService uuidService;
+    UuidService uuidService;
 
     @Autowired
     EntityManager entityManager;
@@ -33,10 +33,9 @@ public class UserService {
     TokenService tokenService;
 
     public User createNewUser(String theUsername, String thePassword, String theEmail) throws Exception{
-        User theUser = new User();
-        UUID theId = uuidService.generateUUID();
-
         if((validateEmailUnique(theEmail) && validateUsernameUnique(theUsername))){
+            User theUser = new User();
+            UUID theId = uuidService.generateUUID();
             String encryptedPassword = new BCryptPasswordEncoder().encode(thePassword);
 
             theUser.setUserId(theId);
@@ -52,13 +51,9 @@ public class UserService {
         }else {
             throw new UsernameOrEmailAlreadyInUseException();
         }
-
-
     }
 
-
     boolean validateEmailUnique(String theEmail) throws Exception {
-
         try{
             findUserByUserEmail(theEmail);
             return false;
@@ -68,7 +63,6 @@ public class UserService {
     }
 
     boolean validateUsernameUnique(String theUsername) throws Exception {
-
         try{
             findUserByUserUsername(theUsername);
             return false;
@@ -77,24 +71,19 @@ public class UserService {
         }
     }
 
-    void validateUserAuthorization(UUID requesterId) throws Exception {
-        User requester = findUserByUserId(requesterId);
-
+    public void validateUserAuthorization(User requester) throws Exception {
         System.out.println("id: "+ requester.getUserId()+" role: " +requester.getUserRole());
-
-        if(!requester.getUserRole().equals("admin")){
+        if(!requester.getUserRole().equals(UserRole.ADMIN)){
             throw new UserUnauthorizedException();
         }
     }
 
 
     User findUserByUserEmail(String theEmail){
-        System.out.println(theEmail);
         TypedQuery<User> theQuery = entityManager.createQuery(
                 "FROM User WHERE userEmail=:theData", User.class);
 
         theQuery.setParameter("theData", theEmail);
-
         try {
             System.out.println(theQuery.getSingleResult());
             return theQuery.getSingleResult();
@@ -108,7 +97,6 @@ public class UserService {
                 "FROM User WHERE userUsername=:theData", User.class);
 
         theQuery.setParameter("theData", theUsername);
-
         try{
             System.out.println(theUsername+theQuery.getSingleResult());
             return theQuery.getSingleResult();
@@ -116,30 +104,26 @@ public class UserService {
             System.out.println(e);
             throw new Exception(e);
         }
-
     }
 
     UserDetails findUserByUserUsernameSS(String theUsername)throws Exception{
         TypedQuery<User> theQuery = entityManager.createQuery(
-                "FROM Users WHERE userUsername=:theData", User.class);
+                "FROM User WHERE userUsername=:theData", User.class);
 
         theQuery.setParameter("theData", theUsername);
-
         try{
             System.out.println(theQuery.getSingleResult());
             return theQuery.getSingleResult();
         }catch (Exception e) {
             throw new UserNotFoundException();
         }
-
     }
 
     User findUserByUserId(UUID theId)throws Exception {
         TypedQuery<User> theQuery = entityManager.createQuery(
-                "FROM Users WHERE userId=:theData", User.class);
+                "FROM User WHERE userId=:theData", User.class);
 
         theQuery.setParameter("theData", theId);
-
         try {
             return theQuery.getSingleResult();
         } catch (Exception e) {
@@ -149,7 +133,6 @@ public class UserService {
 
     public User findUserByToken(HttpServletRequest request){
         var token = this.recoverToken(request);
-
         var username = tokenService.validateToken(token);
         User theUser = userRepository.findUserByUserUsername(username);
         return theUser;
@@ -174,8 +157,5 @@ public class UserService {
         }catch (Exception e){
             throw new UserNotFoundException();
         }
-
     }
-
-
 }

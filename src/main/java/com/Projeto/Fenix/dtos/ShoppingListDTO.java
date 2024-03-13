@@ -3,6 +3,6 @@ package com.Projeto.Fenix.dtos;
 import java.util.Date;
 import java.util.UUID;
 
-public record ShoppingListDTO(UUID owner, String shoppingListName, UUID shoppingListId, String shoppingDescription,
-                              String shoppingListImage, Date shoppingListCreationDate, Date shoppingListGoalDate) {
+public record ShoppingListDTO(String listName, UUID listId, String listDescription,
+                              String listImage, Date creationDate, Date goalDate) {
 }

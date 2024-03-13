@@ -25,9 +25,6 @@ public class ShoppingListMembersService {
     ListMembersRepository listMembersRepository;
 
     @Autowired
-    ShoppingListService shoppingListService;
-
-    @Autowired
     UserService userService;
 
     @Autowired
@@ -47,21 +44,21 @@ public class ShoppingListMembersService {
         newListMember.setMemberId(listOwner);
         newListMember.setListRole(role);
 
+        System.out.println(newListMember);
+
         listMembersRepository.save(newListMember);
     }
 
-    public void addListMember(User requester,UUID newMember, ListMemberRoles role, UUID shoppingListId) throws Exception {
+    public void addListMember(User requester,UUID newMember, ListMemberRoles role, ShoppingList theShoppingList) throws Exception {
         //Valida se a solicitação é de criação de um admin ou coadmin, caso seja, apenas um admin pode fazer essa ação
         if (role == ListMemberRoles.ADMIN || role == ListMemberRoles.CO_ADMIN){
-            validateUserAuthorization(requester, shoppingListId, ListMemberRoles.ADMIN, ListMemberRoles.ADMIN);
+            validateUserAuthorization(requester, theShoppingList, ListMemberRoles.ADMIN);
         }
         //Valida autorização do usuário
-        validateUserAuthorization(requester, shoppingListId, ListMemberRoles.ADMIN, ListMemberRoles.CO_ADMIN);
+        validateUserAuthorization(requester, theShoppingList, ListMemberRoles.CO_ADMIN);
 
 
         //Carrega shopping list e e novo membro e cria o novo membro para a lista
-        ShoppingList theShoppingList = shoppingListService.findShoppingListById(requester, shoppingListId);
-
         User theNewMember = userService.findUserByUserId(newMember);
 
         ListMembers newListMember = new ListMembers();
@@ -75,20 +72,27 @@ public class ShoppingListMembersService {
         listMembersRepository.save(newListMember);
     }
 
-    void validateUserAuthorization(User requester, UUID listId, ListMemberRoles theMainRole, ListMemberRoles theSecondaryRole){
+    public void validateUserAuthorization(User requester, ShoppingList list, ListMemberRoles theMainRole){
         // valida autorização de acordo com os parametros enviados
-        ListMembers theMember = findMemberByList(requester.getUserId(), listId);
-        if((!theMember.getListRole().equals(theMainRole))||(!theMember.getListRole().equals(theSecondaryRole))){
-            throw new UserNotAuthorized();
+        ListMembers theMember = findMemberByList(requester.getUserId(), list);
+
+        if (theMainRole.equals(ListMemberRoles.ADMIN)){
+            if (!theMember.getListRole().equals(ListMemberRoles.ADMIN)){
+                throw new UserNotAuthorized();
+            }
+        }else if (theMainRole.equals(ListMemberRoles.CO_ADMIN)){
+            if (theMember.getListRole().equals(ListMemberRoles.VISITOR)){
+                throw new UserNotAuthorized();
+            }
         }
     }
 
-    ListMembers findMemberByList(UUID memberId, UUID listId){
+    ListMembers findMemberByList(UUID memberId, ShoppingList list){
         TypedQuery<ListMembers> theQuery = entityManager.createQuery(
-                "FROM ListMembers WHERE MemberId=:memberId, ListId=:theList", ListMembers.class);
+                "FROM ListMembers WHERE memberId.userId=:memberId AND listId.listId=:theList", ListMembers.class);
 
         theQuery.setParameter("memberId", memberId);
-        theQuery.setParameter("theList", listId);
+        theQuery.setParameter("theList", list.getListId());
 
         try {
             return theQuery.getSingleResult();
@@ -97,8 +101,8 @@ public class ShoppingListMembersService {
         }
     }
 
-    public void updateListMemberAccess(User requester, UUID member, UUID shoppingListId, ListMemberRoles role) {
-        validateUserAuthorization(requester, shoppingListId, ListMemberRoles.ADMIN, ListMemberRoles.CO_ADMIN);
+    public void updateListMemberAccess(UUID member, ShoppingList shoppingListId, ListMemberRoles role) {
+
 
         ListMembers theAccess = findMemberByList(member, shoppingListId);
 
@@ -107,19 +111,17 @@ public class ShoppingListMembersService {
         entityManager.merge(role);
     }
 
-    public void deleteListMemberAccess(User requester, UUID memberId, UUID listId) {
-        validateUserAuthorization(requester, listId, ListMemberRoles.ADMIN, ListMemberRoles.CO_ADMIN);
+    public void deleteListMemberAccess(UUID memberId, ShoppingList listId) {
 
         ListMembers theAccess = findMemberByList(memberId, listId);
 
         entityManager.remove(theAccess);
     }
 
-    public List<User> listAllMembersByList(User requester, UUID listId) {
-        validateUserAuthorization(requester, listId, ListMemberRoles.ADMIN, ListMemberRoles.CO_ADMIN);
+    public List<User> listAllMembersByList(ShoppingList listId) {
 
         TypedQuery<ListMembers> theQuery = entityManager.createQuery(
-                "FROM ListMembers where listId =:theData", ListMembers.class);
+                "FROM ListMembers where listId.listId =:theData", ListMembers.class);
 
         theQuery.setParameter("theData", listId);
 
@@ -138,9 +140,9 @@ public class ShoppingListMembersService {
 
     }
 
-    public List<ListMembers> listAllListsByMembers(User requester) {
+    public List<ListMembers> listAllListsByMembers(User requester)throws Exception {
         TypedQuery<ListMembers> theQuery = entityManager.createQuery(
-                "FROM ListMembers where memberId=:theData", ListMembers.class);
+                "FROM ListMembers where memberId.userId=:theData", ListMembers.class);
 
         theQuery.setParameter("theData", requester.getUserId());
 
@@ -148,6 +150,19 @@ public class ShoppingListMembersService {
             return theQuery.getResultList();
         }catch(Exception exception) {
             throw new ListNotFound();
+        }
+    }
+
+    void deleteAllMembersFromList(ShoppingList theList){
+        TypedQuery<ListMembers> theQuery = entityManager.createQuery(
+                "FROM ListMembers where listId.listId =:theData", ListMembers.class);
+
+        theQuery.setParameter("theData", theList.getListId());
+
+        List<ListMembers> theMembers = theQuery.getResultList();
+
+        for (int i=0; theMembers.size() > i; i++){
+            entityManager.remove(theMembers.get(i));
         }
     }
 }

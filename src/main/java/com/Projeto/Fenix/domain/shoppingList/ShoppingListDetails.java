@@ -24,11 +24,11 @@ public class ShoppingListDetails {
     private UUID detailsId;
 
     @ManyToOne
-    @JoinColumn(name = "id_list")
+    @JoinColumn(name = "id_list", referencedColumnName = "id_list")
     private ShoppingList listId;
 
     @ManyToOne
-    @JoinColumn(name = "id_item")
+    @JoinColumn(name = "id_item", referencedColumnName = "id_item")
     private Item itemId;
 
     @Column(name = "quantity")

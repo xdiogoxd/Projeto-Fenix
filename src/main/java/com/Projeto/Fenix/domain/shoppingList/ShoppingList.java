@@ -40,16 +40,4 @@ public class ShoppingList {
     @Column(name = "goal_date")
     private Date goalDate;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "id_list", insertable=false, updatable=false)
-    private ListMembers members;
-
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "id_list", insertable=false, updatable=false)
-    private ListShare shareList;
-
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "id_list", insertable=false, updatable=false)
-    private List<ShoppingListDetails> itemsInList;
-
 }

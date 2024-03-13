@@ -1,9 +1,12 @@
 package com.Projeto.Fenix.controllers;
 
+import com.Projeto.Fenix.domain.shoppingList.ListMemberRoles;
 import com.Projeto.Fenix.domain.shoppingList.ListMembers;
+import com.Projeto.Fenix.domain.shoppingList.ShoppingList;
 import com.Projeto.Fenix.domain.user.User;
 import com.Projeto.Fenix.dtos.ListMembersDTO;
 import com.Projeto.Fenix.services.ShoppingListMembersService;
+import com.Projeto.Fenix.services.ShoppingListService;
 import com.Projeto.Fenix.services.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,52 +26,71 @@ public class ShoppingListMembersControllers {
     @Autowired
     ShoppingListMembersService shoppingListMembersService;
 
+    @Autowired
+    ShoppingListService shoppingListService;
+
     @PostMapping()
     public ResponseEntity<String> addNewListMember(HttpServletRequest request, @RequestBody ListMembersDTO listMembersDTO) throws Exception {
 
-        User theOwner = userService.findUserByToken(request);
+        User requester = userService.findUserByToken(request);
 
-        shoppingListMembersService.addListMember(theOwner, listMembersDTO.newMember(), listMembersDTO.role(), listMembersDTO.shoppingListId());
+        ShoppingList theList = shoppingListService.findShoppingListById(listMembersDTO.shoppingListId());
 
-        return new ResponseEntity<String>("Acesso do membro criado com sucesso!", HttpStatus.OK);
+        shoppingListMembersService.validateUserAuthorization(requester,theList, ListMemberRoles.ADMIN);
+
+        shoppingListMembersService.addListMember(requester, listMembersDTO.newMember(), listMembersDTO.role(), theList);
+
+        return new ResponseEntity<>("Acesso do membro criado com sucesso!", HttpStatus.OK);
     }
 
     @PatchMapping()
-    public ResponseEntity<String> updateMemberAccess(HttpServletRequest  request, @RequestBody ListMembersDTO  listMembersDTO){
+    public ResponseEntity<String> updateMemberAccess(HttpServletRequest  request, @RequestBody ListMembersDTO  listMembersDTO) throws Exception {
 
         User requester = userService.findUserByToken(request);
 
-        shoppingListMembersService.updateListMemberAccess(requester, listMembersDTO.member(), listMembersDTO.shoppingListId(), listMembersDTO.role());
+        ShoppingList theList = shoppingListService.findShoppingListById(listMembersDTO.shoppingListId());
 
-        return new ResponseEntity<String>("Acesso do membro atualizado com sucesso!", HttpStatus.OK);
+        shoppingListMembersService.validateUserAuthorization(requester,theList, ListMemberRoles.ADMIN);
+
+        shoppingListMembersService.updateListMemberAccess(listMembersDTO.member(), theList, listMembersDTO.role());
+
+        return new ResponseEntity<>("Acesso do membro atualizado com sucesso!", HttpStatus.OK);
     }
 
-    @GetMapping()
-    public ResponseEntity<List<User>> listMembersByList(HttpServletRequest request, @RequestBody ListMembersDTO listMembersDTO){
+    @GetMapping("/list")
+    public ResponseEntity<List<User>> listMembersByList(HttpServletRequest request, @RequestBody ListMembersDTO listMembersDTO) throws Exception {
         User requester = userService.findUserByToken(request);
 
-        List<User> theMembers = shoppingListMembersService.listAllMembersByList(requester, listMembersDTO.shoppingListId());
+        ShoppingList theList = shoppingListService.findShoppingListById(listMembersDTO.shoppingListId());
+
+        shoppingListMembersService.validateUserAuthorization(requester,theList, ListMemberRoles.ADMIN);
+
+        List<User> theMembers = shoppingListMembersService.listAllMembersByList(theList);
 
         return new ResponseEntity<>(theMembers, HttpStatus.OK);
     }
 
-    @GetMapping()
-    public ResponseEntity<List<ListMembers>> listAllListsByMember(HttpServletRequest request, @RequestBody ListMembersDTO listMembersDTO){
+    @GetMapping("/member")
+    public ResponseEntity<List<ListMembers>> listAllListsByMember(HttpServletRequest request) throws Exception {
         User requester = userService.findUserByToken(request);
 
         List<ListMembers> theLists = shoppingListMembersService.listAllListsByMembers(requester);
 
-        return new ResponseEntity<List<ListMembers>>(theLists, HttpStatus.OK);
+        return new ResponseEntity<>(theLists, HttpStatus.OK);
     }
 
     @DeleteMapping()
-    public ResponseEntity<String> deleteMemberAccess(HttpServletRequest request, @RequestBody ListMembersDTO listMembersDTO){
+    public ResponseEntity<String> deleteMemberAccess(HttpServletRequest request, @RequestBody ListMembersDTO listMembersDTO) throws Exception {
 
-        User theOwner = userService.findUserByToken(request);
+        User requester = userService.findUserByToken(request);
 
-        shoppingListMembersService.deleteListMemberAccess(theOwner, listMembersDTO.member(), listMembersDTO.shoppingListId());
+        ShoppingList theList = shoppingListService.findShoppingListById(listMembersDTO.shoppingListId());
 
-        return new ResponseEntity<String>("Acesso deletado com sucesso", HttpStatus.OK);
+        shoppingListMembersService.validateUserAuthorization(requester,theList, ListMemberRoles.ADMIN);
+
+        shoppingListMembersService.deleteListMemberAccess(listMembersDTO.member(), theList);
+
+        return new ResponseEntity<>("Acesso deletado com sucesso", HttpStatus.OK);
     }
 
 }

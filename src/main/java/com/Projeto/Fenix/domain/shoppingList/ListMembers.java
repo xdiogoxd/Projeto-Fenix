@@ -24,14 +24,15 @@ public class ListMembers {
     private UUID listMembersId;
 
     @ManyToOne
-    @JoinColumn(name = "id_list")
+    @JoinColumn(name = "id_list", referencedColumnName = "id_list")
     private ShoppingList listId;
 
     @ManyToOne
-    @JoinColumn(name = "id_member")
+    @JoinColumn(name = "id_member", referencedColumnName = "id_user")
     private User memberId;
 
     @Column(name = "list_role")
+    @Enumerated(EnumType.STRING)
     private ListMemberRoles listRole;
 
 }

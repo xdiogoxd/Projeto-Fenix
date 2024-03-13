@@ -27,9 +27,7 @@ public class ItemsService {
     @Autowired
     EntityManager entityManager;
 
-    public Item addNewItem(UUID requester, String itemName, String itemDescription, String itemCategory) throws Exception {
-        // valida se o usuário pode fazer a criação
-        userService.validateUserAuthorization(requester);
+    public Item addNewItem(String itemName, String itemDescription, String itemCategory) throws Exception {
         // valida se o nome está disponível para uso
         if(validateNameIsAvailable(itemName)){
             // Seta todos os atributos do item e cria o item
@@ -47,13 +45,31 @@ public class ItemsService {
             throw new ItemAlreadyExistException();
         }
     }
-    public Item updateItemById(UUID requester, UUID itemId, String itemName, String itemDescription,
+    public Item updateItemById(UUID itemId, String itemName, String itemDescription,
                                String itemImage, String itemBrand) throws Exception {
         // instancia o item com que será atualizado
         Item theUpdatedItem = findItemById(itemId);
 
-        //Valida se o usuário pode atualizar um item
-        userService.validateUserAuthorization(requester);
+        //Valida se o nome foi atualizado e caso ele foi atualizado se esse novo nome está disponível
+        if(validateNameIsAvailable(itemName) || theUpdatedItem.getItemName().equals(itemName)) {
+
+            theUpdatedItem.setItemName(itemName);
+            theUpdatedItem.setItemDescription(itemDescription);
+            theUpdatedItem.setItemImage(itemImage);
+            theUpdatedItem.setItemBrand(itemBrand);
+
+            itemsRepository.save(theUpdatedItem);
+
+            return theUpdatedItem;
+        }else{
+            throw new ItemAlreadyExistException();
+        }
+    }
+    public Item updateItemByName(String itemName, String itemDescription,
+                               String itemImage, String itemBrand) throws Exception {
+        // instancia o item com que será atualizado
+        Item theUpdatedItem = findItemByName(itemName);
+
         //Valida se o nome foi atualizado e caso ele foi atualizado se esse novo nome está disponível
         if(validateNameIsAvailable(itemName) || theUpdatedItem.getItemName().equals(itemName)) {
 
@@ -120,18 +136,14 @@ public class ItemsService {
 
     }
 
-    public void deleteItemById(UUID theItemId, UUID requester) throws Exception {
-        // Valida se o usuário pode realizar uma deleção
-        userService.validateUserAuthorization(requester);
+    public void deleteItemById(UUID theItemId) throws Exception {
         // Instancia o item
         Item theItem = findItemById(theItemId);
         // Deleta o item
         itemsRepository.delete(theItem);
     }
 
-    public void deleteItemByName(String theItemName, UUID requester) throws Exception {
-        // Valida se o usuário pode realizar uma deleção
-        userService.validateUserAuthorization(requester);
+    public void deleteItemByName(String theItemName) throws Exception {
         // Instancia o item
         Item theItem = findItemByName(theItemName);
         // Deleta o item

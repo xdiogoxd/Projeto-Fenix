@@ -9,6 +9,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,87 +22,50 @@ public class ShoppingListDetailsService {
     ShoppingListDetailsRepository shoppingListDetailsRepository;
 
     @Autowired
-    ShoppingListService shoppingListService;
-
-    @Autowired
-    ItemsService itemsService;
-
-    @Autowired
     EntityManager entityManager;
 
     @Autowired
     UuidService uuidService;
 
-    @Autowired
-    ShoppingListMembersService shoppingListMembersService;
-
-    public ShoppingListDetails addItemToList(User requester, UUID shoppingListId, UUID theItemId, double quantity) throws Exception {
-        // checa a role do requester nesta lista, para verificar se o usuário pode realizar a atividade ou não
-        shoppingListMembersService.validateUserAuthorization(requester, shoppingListId, ListMemberRoles.ADMIN, ListMemberRoles.CO_ADMIN);
-
-
-        ShoppingList shoppingList = shoppingListService.findShoppingListById(requester, shoppingListId);
-        Item theItem = itemsService.findItemById(theItemId);
-
-        if (validateShoppingListToUser(requester, shoppingList)){
-
-            if(validateItemAlreadyExist(theItem, shoppingList) ){
-                ShoppingListDetails theResult = updateItems(shoppingList, theItem, quantity, EnumShoppingListMethod.ADD);
-                return theResult;
-            }else {
-                ShoppingListDetails theResult = addNewItemToList(shoppingList, theItem, quantity);
-                return theResult;
-            }
-
+    @Transactional
+    public ShoppingListDetails addItemToList(ShoppingList shoppingList, Item theItem, double quantity) throws Exception {
+        if(validateItemAlreadyExist(theItem, shoppingList) ){
+            ShoppingListDetails theResult = updateItems(shoppingList, theItem, quantity, EnumShoppingListMethod.ADD);
+            return theResult;
+        }else {
+            ShoppingListDetails theResult = addNewItemToList(shoppingList, theItem, quantity);
+            return theResult;
         }
-        throw new Exception("Usuário não autorizado para realizar atualização da lista");
-
     }
 
     void removeItemToList(User requester, String listId, Item theItem, double quantity){
         //shoppingListDetailsRepository.addItem(requester.getUserId(), listId, theItem.getItemId(), quantity);
     }
 
-    boolean validateShoppingListToUser(User requester, ShoppingList shoppingList){
-
-        TypedQuery<ListMembers> theQuery = entityManager.createQuery(
-                "FROM ListMembers WHERE listId=:theList AND memberId=:theMember ", ListMembers.class);
-
-        theQuery.setParameter("theList",shoppingList.getListId());
-        theQuery.setParameter("theMember",requester.getUserId());
-
-        ListMembers theMember = theQuery.getSingleResult();
-
-        if (theMember.getListRole() != ListMemberRoles.ADMIN){
-            return false;
-        }else {
-            return true;
-        }
-
-    }
-
     boolean validateItemAlreadyExist(Item theItem, ShoppingList shoppingList){
         TypedQuery<ShoppingListDetails> theQuery = entityManager.createQuery(
-                "FROM ShoppingListDetails WHERE listId=:theList AND itemId=:theItem", ShoppingListDetails.class);
+                "FROM ShoppingListDetails WHERE listId.listId=:theList AND itemId.itemId=:theItem", ShoppingListDetails.class);
 
         theQuery.setParameter("theList", shoppingList.getListId());
         theQuery.setParameter("theItem", theItem.getItemId());
 
-        ShoppingListDetails theShoppingListDetails = theQuery.getSingleResult();
-
-        if (theShoppingListDetails.equals(null)){
-            return false;
-        }else{
+        try{
+            theQuery.getSingleResult();
             return true;
+        }catch (Exception e){
+            return false;
         }
+
+
     }
 
+    @Transactional
     ShoppingListDetails updateItems(ShoppingList theList, Item theItem, double quantity, EnumShoppingListMethod action) throws Exception {
 
         if(validateItemAlreadyExist(theItem, theList)){
             if(action.equals(EnumShoppingListMethod.ADD)){
                 TypedQuery<ShoppingListDetails> theQuery = entityManager.createQuery(
-                        "FROM ShoppingListDetails WHERE listId=:theList AND itemId=:theItem", ShoppingListDetails.class);
+                        "FROM ShoppingListDetails WHERE listId.listId=:theList AND itemId.itemId=:theItem", ShoppingListDetails.class);
 
                 theQuery.setParameter("theList", theList.getListId());
                 theQuery.setParameter("theItem", theItem.getItemId());
@@ -116,7 +80,8 @@ public class ShoppingListDetailsService {
 
             }else if (action.equals(EnumShoppingListMethod.REMOVE)){
                 TypedQuery<ShoppingListDetails> theQuery = entityManager.createQuery(
-                        "FROM ShoppingListDetails WHERE listId=:theList AND itemId=:theItem", ShoppingListDetails.class);
+                        "FROM ShoppingListDetails WHERE listId.listId=:theList AND itemId.itemId=:theItem", ShoppingListDetails.class);
+
 
                 theQuery.setParameter("theList", theList.getListId());
                 theQuery.setParameter("theItem", theItem.getItemId());
@@ -158,11 +123,11 @@ public class ShoppingListDetailsService {
         throw new Exception("Item já existe na lista");
     }
 
-    public List<ShoppingListDetailsView> listAllItemsByListId(User requester, UUID listId) throws Exception {
-        ShoppingList theList = shoppingListService.findShoppingListById(requester, listId);
+    public List<ShoppingListDetailsView> listAllItemsByListId(ShoppingList theList) throws Exception {
+
 
         TypedQuery<ShoppingListDetails> theQuery = entityManager.createQuery(
-                "FROM ShoppingListDetails where listId =:theData", ShoppingListDetails.class);
+                "FROM ShoppingListDetails where listId.listId =:theData", ShoppingListDetails.class);
 
         theQuery.setParameter("theData",theList.getListId());
 
@@ -176,8 +141,8 @@ public class ShoppingListDetailsService {
             throw new ItemNotFoundException();
         }
 
-        for(int i = 0; allListItems.size() < i; i++){
-            theItemQuery.setParameter("theItemId",allListItems.get(i).getItemId());
+        for(int i = 0; allListItems.size() > i; i++){
+            theItemQuery.setParameter("theItemId",allListItems.get(i).getItemId().getItemId());
 
             Item theItem = theItemQuery.getSingleResult();
 
@@ -191,12 +156,9 @@ public class ShoppingListDetailsService {
 
     }
 
-    public void deleItemFromList(User requester, UUID itemId, UUID listId, double quantity) throws Exception {
-        ShoppingList theList = shoppingListService.findShoppingListById(requester, listId);
-        Item theItem = itemsService.findItemById(itemId);
-        shoppingListMembersService.validateUserAuthorization(requester, listId, ListMemberRoles.ADMIN, ListMemberRoles.CO_ADMIN);
+    @Transactional
+    public void deleItemFromList(Item theItem, ShoppingList list, double quantity) throws Exception {
 
-
-        updateItems(theList, theItem, quantity, EnumShoppingListMethod.REMOVE);
+        updateItems(list, theItem, quantity, EnumShoppingListMethod.REMOVE);
     }
 }

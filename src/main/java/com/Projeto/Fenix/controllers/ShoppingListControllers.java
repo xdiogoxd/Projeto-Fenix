@@ -1,5 +1,7 @@
 package com.Projeto.Fenix.controllers;
 
+import com.Projeto.Fenix.domain.shoppingList.ListMemberRoles;
+import com.Projeto.Fenix.domain.shoppingList.ListMembers;
 import com.Projeto.Fenix.domain.shoppingList.ShoppingList;
 import com.Projeto.Fenix.domain.user.User;
 import com.Projeto.Fenix.dtos.ShoppingListDTO;
@@ -24,6 +26,7 @@ public class ShoppingListControllers {
     @Autowired
     UserService  userService;
 
+    @Autowired
     ShoppingListMembersService shoppingListMembersService;
 
     @PostMapping
@@ -31,16 +34,18 @@ public class ShoppingListControllers {
                                                            @RequestBody ShoppingListDTO shoppingListDTO) throws Exception {
         User theUser = userService.findUserByToken(request);
 
-        ShoppingList newShoppingList = shoppingListService.createShoppingList(theUser, shoppingListDTO.shoppingListName());
-        return new ResponseEntity<ShoppingList>(newShoppingList, HttpStatus.OK);
+        ShoppingList newShoppingList = shoppingListService.createShoppingList(theUser, shoppingListDTO.listName());
+        return new ResponseEntity<>(newShoppingList, HttpStatus.OK);
     }
 
     @GetMapping
     public ResponseEntity<List<ShoppingList>> listAllShoppingListsByUser(HttpServletRequest request) throws Exception {
         User theUser = userService.findUserByToken(request);
 
-        List<ShoppingList> theList = shoppingListService.listAllShoppingListsByUser(theUser);
-        return new ResponseEntity<List<ShoppingList>>(theList, HttpStatus.OK);
+        List<ListMembers> theListMembers = shoppingListMembersService.listAllListsByMembers(theUser);
+
+        List<ShoppingList> theList = shoppingListService.listAllShoppingListsByUser(theListMembers);
+        return new ResponseEntity<>(theList, HttpStatus.OK);
     }
 
     @GetMapping("/id")
@@ -48,21 +53,27 @@ public class ShoppingListControllers {
                                                              @RequestBody ShoppingListDTO shoppingListDTO) throws Exception {
         User theUser = userService.findUserByToken(request);
 
-        ShoppingList theShoppingList = shoppingListService.findShoppingListById(theUser, shoppingListDTO.shoppingListId());
-        return new ResponseEntity<ShoppingList>(theShoppingList,HttpStatus.OK);
+        ShoppingList theList = shoppingListService.findShoppingListById(shoppingListDTO.listId());
+
+        shoppingListMembersService.validateUserAuthorization(theUser, theList, ListMemberRoles.VISITOR);
+
+        return new ResponseEntity<>(theList,HttpStatus.OK);
     }
 
-    @PatchMapping("/id")
+    @PutMapping("/id")
     public ResponseEntity<ShoppingList> updateShoppingListById(HttpServletRequest request,
                                                                @RequestBody ShoppingListDTO shoppingListDTO) throws Exception {
         User theUser = userService.findUserByToken(request);
 
-        ShoppingList theShoppingList = shoppingListService.updateShoppingListById(theUser,shoppingListDTO.shoppingListId(),
-                shoppingListDTO.shoppingListName(), shoppingListDTO.shoppingDescription(),
-                shoppingListDTO.shoppingListImage(), shoppingListDTO.shoppingListCreationDate(),
-                shoppingListDTO.shoppingListGoalDate());
+        ShoppingList theList = shoppingListService.findShoppingListById(shoppingListDTO.listId());
 
-        return new ResponseEntity<ShoppingList>(theShoppingList, HttpStatus.OK);
+        shoppingListMembersService.validateUserAuthorization(theUser, theList, ListMemberRoles.CO_ADMIN);
+
+        ShoppingList theShoppingList = shoppingListService.updateShoppingListById(shoppingListDTO.listId(),
+                shoppingListDTO.listName(), shoppingListDTO.listDescription(), shoppingListDTO.listImage(),
+                shoppingListDTO.creationDate(), shoppingListDTO.goalDate());
+
+        return new ResponseEntity<>(theShoppingList, HttpStatus.OK);
     }
 
     @DeleteMapping("/id")
@@ -70,8 +81,12 @@ public class ShoppingListControllers {
                                                              @RequestBody ShoppingListDTO shoppingListDTO) throws Exception {
         User theUser = userService.findUserByToken(request);
 
-        shoppingListService.deleteShoppingListById(theUser, shoppingListDTO.shoppingListId());
-        return new ResponseEntity<String>("ShoppingList deleted",HttpStatus.OK);
+        ShoppingList theList = shoppingListService.findShoppingListById(shoppingListDTO.listId());
+
+        shoppingListMembersService.validateUserAuthorization(theUser, theList, ListMemberRoles.ADMIN);
+
+        shoppingListService.deleteShoppingListById(theList);
+        return new ResponseEntity<>("ShoppingList deleted",HttpStatus.OK);
     }
 
 

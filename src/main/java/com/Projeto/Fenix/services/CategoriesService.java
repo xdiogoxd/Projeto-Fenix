@@ -27,10 +27,8 @@ public class CategoriesService {
     @Autowired
     EntityManager entityManager;
 
-    public Category addNewCategory(UUID requester, String categoryName, String categoryDescription,
+    public Category addNewCategory(String categoryName, String categoryDescription,
                                    String categoryIcon) throws Exception {
-        //valida autorização do usuário para adicionar categoria
-        userService.validateUserAuthorization(requester);
         // Valida se o nome da categoria está disponível para uso
         if (validaCategoryName(categoryName)) {
             //Seta os atributos para a nova categoria e cria a categoria
@@ -50,11 +48,28 @@ public class CategoriesService {
 
     }
 
-    public Category updateCategoryById(UUID requester, UUID categoryId, String categoryName, String categoryDescription, String categoryIcon) throws Exception {
-        // valida se o usuário pode fazer a atualização
-        userService.validateUserAuthorization(requester);
+    public Category updateCategoryById(UUID categoryId, String categoryName, String categoryDescription, String categoryIcon) throws Exception {
         // carrega categoria
         Category updatedCategory = findCategoryById(categoryId);
+
+        // checa se o nome da categoria foi atualizado e se foi se esse novo nome já existe no banco de dados
+        if(validaCategoryName(categoryName) || updatedCategory.getCategoryName().equals(categoryName)){
+            // atualiza os campos e salva no banco de dados
+
+            updatedCategory.setCategoryName(categoryName);
+            updatedCategory.setCategoryDescription(categoryDescription);
+            updatedCategory.setCategoryIcon(categoryIcon);
+
+            return categoriesRepository.save(updatedCategory);
+        }
+        else {
+            throw new CategoryAlreadyExistException();
+        }
+    }
+
+    public Category updateCategoryByName(String categoryName, String categoryDescription, String categoryIcon) throws Exception {
+        // carrega categoria
+        Category updatedCategory = findCategoryByName(categoryName);
 
         // checa se o nome da categoria foi atualizado e se foi se esse novo nome já existe no banco de dados
         if(validaCategoryName(categoryName) || updatedCategory.getCategoryName().equals(categoryName)){
@@ -120,9 +135,7 @@ public class CategoriesService {
         }
     }
 
-    public void deleteCategoryById(UUID categoryId, UUID requester) throws Exception {
-        //Valida se o usuário tem autorização para realizar a deleção
-        userService.validateUserAuthorization(requester);
+    public void deleteCategoryById(UUID categoryId) throws Exception {
         // instancia a categoria
         Category theCategory = findCategoryById(categoryId);
 
@@ -131,9 +144,7 @@ public class CategoriesService {
 
     }
 
-    public void deleteCategoryByName(String categoryName, UUID requester) throws Exception {
-        //Valida se o usuário tem autorização para realizar a deleção
-        userService.validateUserAuthorization(requester);
+    public void deleteCategoryByName(String categoryName) throws Exception {
         // instancia a categoria
         Category theCategory = findCategoryByName(categoryName);
 

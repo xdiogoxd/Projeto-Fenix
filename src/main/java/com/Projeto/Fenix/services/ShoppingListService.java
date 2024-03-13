@@ -16,6 +16,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,7 +27,7 @@ import java.util.UUID;
 public class ShoppingListService {
 
     @Autowired
-     ShoppingListRepository shoppingListRepository;
+    ShoppingListRepository shoppingListRepository;
 
     @Autowired
     UuidService uuidService;
@@ -59,7 +60,7 @@ public class ShoppingListService {
 
 
 
-    public ShoppingList findShoppingListById(User requester, UUID theShoppingListId) throws Exception {
+    public ShoppingList findShoppingListById(UUID theShoppingListId) throws Exception {
 
 
         //Cria query para achar a lista
@@ -69,14 +70,6 @@ public class ShoppingListService {
         theQuery.setParameter("theList",theShoppingListId);
 
         try{
-            ShoppingList theList = theQuery.getSingleResult();
-            // Valida se o usuário é membro desta lista
-            try{
-                shoppingListMembersService.findMemberByList(requester.getUserId(),theList.getListId());
-            }catch (Exception e){
-                throw new UserNotAuthorized();
-            }
-            // Caso o usuário seja membro retorna a lista
             return theQuery.getSingleResult();
         }catch (Exception exception){
             throw new ShoppingListNotFound();
@@ -84,33 +77,34 @@ public class ShoppingListService {
     }
 
 
-    public List<ShoppingList> listAllShoppingListsByUser(User theUser) throws Exception {
-        //Lista todas as listas que esse usuário é membro
-        List<ListMembers> theList = shoppingListMembersService.listAllListsByMembers(theUser);
+    public List<ShoppingList> listAllShoppingListsByUser(List<ListMembers> theList) throws Exception {
+
         List<ShoppingList> allShoppingLists = new ArrayList<>();
-        if (allShoppingLists.size() == 0){
+        System.out.println(theList);
+
+        if (theList.size() == 0){
             throw new ListNotFound();
         }
-        for (int i=0; theList.size() < i; i++){
+        for (int i = 0; i < theList.size(); i++){
             TypedQuery<ShoppingList> theQuery = entityManager.createQuery(
                     "FROM ShoppingList WHERE listId =:theData", ShoppingList.class);
 
-            theQuery.setParameter("theData",theList.get(i).getListId());
+            theQuery.setParameter("theData",theList.get(i).getListId().getListId());
 
             allShoppingLists.add(theQuery.getSingleResult());
+            System.out.println(allShoppingLists);
         }
         return allShoppingLists;
 
     }
 
-    public ShoppingList updateShoppingListById(User theUser, UUID shoppingListId, String shoppingListName,
+    @Transactional
+    public ShoppingList updateShoppingListById(UUID shoppingListId, String shoppingListName,
                                                String shoppingDescription, String shoppingListImage,
                                                Date shoppingListCreationDate, Date shoppingListGoalDate) throws Exception {
-        // Valida se o usuário é admin ou coadmin para realizar a atualização
-        shoppingListMembersService.validateUserAuthorization(theUser, shoppingListId, ListMemberRoles.ADMIN, ListMemberRoles.CO_ADMIN);
 
         // Localiza a shopping list, seta os campos e atualiza
-        ShoppingList theUpdateList = findShoppingListById(theUser, shoppingListId);
+        ShoppingList theUpdateList = findShoppingListById(shoppingListId);
 
         theUpdateList.setListName(shoppingListName);
         theUpdateList.setListDescription(shoppingDescription);
@@ -123,12 +117,10 @@ public class ShoppingListService {
         return theUpdateList;
     }
 
-    public void deleteShoppingListById(User theUser, UUID shoppingListId) throws Exception {
-        // Valida se o usuário é admin para realizar a deleção
-        shoppingListMembersService.validateUserAuthorization(theUser, shoppingListId, ListMemberRoles.ADMIN, ListMemberRoles.ADMIN);
+    @Transactional
+    public void deleteShoppingListById(ShoppingList theList) throws Exception {
 
-        ShoppingList theList = findShoppingListById(theUser, shoppingListId);
-
+        shoppingListMembersService.deleteAllMembersFromList(theList);
         entityManager.remove(theList);
     }
 
