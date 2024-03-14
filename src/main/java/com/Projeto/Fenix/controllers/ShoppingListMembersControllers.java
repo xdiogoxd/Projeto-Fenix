@@ -34,25 +34,29 @@ public class ShoppingListMembersControllers {
 
         User requester = userService.findUserByToken(request);
 
-        ShoppingList theList = shoppingListService.findShoppingListById(listMembersDTO.shoppingListId());
+        User newMember = userService.findUserByUserId(listMembersDTO.memberId());
 
-        shoppingListMembersService.validateUserAuthorization(requester,theList, ListMemberRoles.ADMIN);
+        ShoppingList theList = shoppingListService.findShoppingListById(listMembersDTO.listId());
 
-        shoppingListMembersService.addListMember(requester, listMembersDTO.newMember(), listMembersDTO.role(), theList);
+        shoppingListMembersService.validateUserAuthorization(requester,theList, ListMemberRoles.CO_ADMIN);
+
+        shoppingListMembersService.addListMember(newMember, listMembersDTO.role(), theList);
 
         return new ResponseEntity<>("Acesso do membro criado com sucesso!", HttpStatus.OK);
     }
 
-    @PatchMapping()
+    @PutMapping()
     public ResponseEntity<String> updateMemberAccess(HttpServletRequest  request, @RequestBody ListMembersDTO  listMembersDTO) throws Exception {
 
         User requester = userService.findUserByToken(request);
 
-        ShoppingList theList = shoppingListService.findShoppingListById(listMembersDTO.shoppingListId());
+        User member = userService.findUserByUserId(listMembersDTO.memberId());
+
+        ShoppingList theList = shoppingListService.findShoppingListById(listMembersDTO.listId());
 
         shoppingListMembersService.validateUserAuthorization(requester,theList, ListMemberRoles.ADMIN);
 
-        shoppingListMembersService.updateListMemberAccess(listMembersDTO.member(), theList, listMembersDTO.role());
+        shoppingListMembersService.updateListMemberAccess(member, theList, listMembersDTO.role());
 
         return new ResponseEntity<>("Acesso do membro atualizado com sucesso!", HttpStatus.OK);
     }
@@ -61,7 +65,7 @@ public class ShoppingListMembersControllers {
     public ResponseEntity<List<User>> listMembersByList(HttpServletRequest request, @RequestBody ListMembersDTO listMembersDTO) throws Exception {
         User requester = userService.findUserByToken(request);
 
-        ShoppingList theList = shoppingListService.findShoppingListById(listMembersDTO.shoppingListId());
+        ShoppingList theList = shoppingListService.findShoppingListById(listMembersDTO.listId());
 
         shoppingListMembersService.validateUserAuthorization(requester,theList, ListMemberRoles.ADMIN);
 
@@ -74,7 +78,7 @@ public class ShoppingListMembersControllers {
     public ResponseEntity<List<ListMembers>> listAllListsByMember(HttpServletRequest request) throws Exception {
         User requester = userService.findUserByToken(request);
 
-        List<ListMembers> theLists = shoppingListMembersService.listAllListsByMembers(requester);
+        List<ListMembers> theLists = shoppingListMembersService.listAllListsByMember(requester);
 
         return new ResponseEntity<>(theLists, HttpStatus.OK);
     }
@@ -84,11 +88,13 @@ public class ShoppingListMembersControllers {
 
         User requester = userService.findUserByToken(request);
 
-        ShoppingList theList = shoppingListService.findShoppingListById(listMembersDTO.shoppingListId());
+        User member = userService.findUserByUserId(listMembersDTO.memberId());
+
+        ShoppingList theList = shoppingListService.findShoppingListById(listMembersDTO.listId());
 
         shoppingListMembersService.validateUserAuthorization(requester,theList, ListMemberRoles.ADMIN);
 
-        shoppingListMembersService.deleteListMemberAccess(listMembersDTO.member(), theList);
+        shoppingListMembersService.deleteListMemberAccess(member, theList);
 
         return new ResponseEntity<>("Acesso deletado com sucesso", HttpStatus.OK);
     }

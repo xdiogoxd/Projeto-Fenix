@@ -106,20 +106,7 @@ public class UserService {
         }
     }
 
-    UserDetails findUserByUserUsernameSS(String theUsername)throws Exception{
-        TypedQuery<User> theQuery = entityManager.createQuery(
-                "FROM User WHERE userUsername=:theData", User.class);
-
-        theQuery.setParameter("theData", theUsername);
-        try{
-            System.out.println(theQuery.getSingleResult());
-            return theQuery.getSingleResult();
-        }catch (Exception e) {
-            throw new UserNotFoundException();
-        }
-    }
-
-    User findUserByUserId(UUID theId)throws Exception {
+    public User findUserByUserId(UUID theId)throws Exception {
         TypedQuery<User> theQuery = entityManager.createQuery(
                 "FROM User WHERE userId=:theData", User.class);
 
@@ -149,11 +136,15 @@ public class UserService {
 
     public User findUserByIdPublicInfo(UUID userId){
         TypedQuery<User> theQuery = entityManager.createQuery(
-                "userId, userDisplayName FROM User where userId=:theData",User.class);
+                "FROM User where userId=:theData",User.class);
         theQuery.setParameter("theData",userId);
+        User theUserPublicInfo = new User();
 
         try {
-            return theQuery.getSingleResult();
+            User theUser = theQuery.getSingleResult();
+            theUserPublicInfo.setUserDisplayName(theUser.getUserDisplayName());
+            theUserPublicInfo.setUserId(theUser.getUserId());
+            return theUserPublicInfo;
         }catch (Exception e){
             throw new UserNotFoundException();
         }

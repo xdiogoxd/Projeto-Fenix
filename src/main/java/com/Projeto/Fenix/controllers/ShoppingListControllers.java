@@ -42,7 +42,7 @@ public class ShoppingListControllers {
     public ResponseEntity<List<ShoppingList>> listAllShoppingListsByUser(HttpServletRequest request) throws Exception {
         User theUser = userService.findUserByToken(request);
 
-        List<ListMembers> theListMembers = shoppingListMembersService.listAllListsByMembers(theUser);
+        List<ListMembers> theListMembers = shoppingListMembersService.listAllListsByMember(theUser);
 
         List<ShoppingList> theList = shoppingListService.listAllShoppingListsByUser(theListMembers);
         return new ResponseEntity<>(theList, HttpStatus.OK);

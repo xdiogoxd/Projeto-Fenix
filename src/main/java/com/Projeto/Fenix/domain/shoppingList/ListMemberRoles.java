@@ -1,5 +1,8 @@
 package com.Projeto.Fenix.domain.shoppingList;
 
+import org.springframework.context.annotation.ComponentScan;
+
+@ComponentScan
 public enum ListMemberRoles {
 
     ADMIN("admin"),
