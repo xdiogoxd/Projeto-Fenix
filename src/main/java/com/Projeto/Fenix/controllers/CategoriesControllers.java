@@ -23,6 +23,7 @@ public class CategoriesControllers {
     @Autowired
     UserService userService;
 
+
     @PostMapping
     public ResponseEntity<Category> addNewItem(HttpServletRequest request, @RequestBody CategoriesDTO categoriesDTO) throws Exception {
         User theUser = userService.findUserByToken(request);

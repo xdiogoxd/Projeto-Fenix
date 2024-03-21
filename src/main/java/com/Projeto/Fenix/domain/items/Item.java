@@ -34,8 +34,9 @@ public class Item {
     @Column(name = "image_url")
     private String itemImage;
 
-    @Column(name = "category")
-    private String itemCategory;
+    @OneToOne
+    @JoinColumn(name = "category", referencedColumnName = "name")
+    private Category itemCategory;
 
     @Column(name = "brand")
     private String itemBrand;

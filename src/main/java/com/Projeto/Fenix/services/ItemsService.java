@@ -1,8 +1,10 @@
 package com.Projeto.Fenix.services;
 
+import com.Projeto.Fenix.domain.items.Category;
 import com.Projeto.Fenix.domain.items.Item;
 import com.Projeto.Fenix.exceptions.ItemAlreadyExistException;
 import com.Projeto.Fenix.exceptions.ItemNotFoundException;
+import com.Projeto.Fenix.exceptions.MissingFieldsException;
 import com.Projeto.Fenix.repositories.ItemsRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
@@ -27,7 +29,10 @@ public class ItemsService {
     @Autowired
     EntityManager entityManager;
 
-    public Item addNewItem(String itemName, String itemDescription, String itemCategory) throws Exception {
+    public Item addNewItem(String itemName, String itemDescription, Category itemCategory) throws Exception {
+        if (itemName.equals(null) || itemDescription.equals(null) || itemCategory.equals(null)){
+            throw new MissingFieldsException();
+        }
         // valida se o nome está disponível para uso
         if(validateNameIsAvailable(itemName)){
             // Seta todos os atributos do item e cria o item
@@ -46,7 +51,10 @@ public class ItemsService {
         }
     }
     public Item updateItemById(UUID itemId, String itemName, String itemDescription,
-                               String itemImage, String itemBrand) throws Exception {
+                               String itemImage, String itemBrand, Category itemCategory) throws Exception {
+        if (itemName.equals(null) || itemDescription.equals(null) || itemCategory.equals(null)){
+            throw new MissingFieldsException();
+        }
         // instancia o item com que será atualizado
         Item theUpdatedItem = findItemById(itemId);
 

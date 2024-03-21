@@ -49,7 +49,7 @@ public class ItemsControllers {
 
         userService.validateUserAuthorization(theUser);
 
-        Item updatedItem = itemsService.updateItemById(itemsDTO.itemId(), itemsDTO.itemName(), itemsDTO.itemDescription(), itemsDTO.itemImage(), itemsDTO.itemBrand());
+        Item updatedItem = itemsService.updateItemById(itemsDTO.itemId(), itemsDTO.itemName(), itemsDTO.itemDescription(), itemsDTO.itemImage(), itemsDTO.itemBrand(), itemsDTO.itemCategory());
         return new ResponseEntity<>(updatedItem, HttpStatus.OK);
     }
 

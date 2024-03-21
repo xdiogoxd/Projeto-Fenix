@@ -3,6 +3,7 @@ package com.Projeto.Fenix.services;
 import com.Projeto.Fenix.domain.items.Category;
 import com.Projeto.Fenix.exceptions.CategoryAlreadyExistException;
 import com.Projeto.Fenix.exceptions.CategoryNotFoundException;
+import com.Projeto.Fenix.exceptions.MissingFieldsException;
 import com.Projeto.Fenix.repositories.CategoriesRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
@@ -16,9 +17,6 @@ import java.util.UUID;
 public class CategoriesService {
 
     @Autowired
-    UserService userService;
-
-    @Autowired
     UuidService uuidService;
 
     @Autowired
@@ -29,6 +27,10 @@ public class CategoriesService {
 
     public Category addNewCategory(String categoryName, String categoryDescription,
                                    String categoryIcon) throws Exception {
+        if(categoryName.equals(null) || categoryDescription.equals(null) || categoryIcon.equals(null)){
+            throw new MissingFieldsException();
+        }
+
         // Valida se o nome da categoria está disponível para uso
         if (validaCategoryName(categoryName)) {
             //Seta os atributos para a nova categoria e cria a categoria
@@ -49,6 +51,10 @@ public class CategoriesService {
     }
 
     public Category updateCategoryById(UUID categoryId, String categoryName, String categoryDescription, String categoryIcon) throws Exception {
+        if(categoryId.equals(null) || categoryName.equals(null) || categoryDescription.equals(null) || categoryIcon.equals(null)){
+            throw new MissingFieldsException();
+        }
+
         // carrega categoria
         Category updatedCategory = findCategoryById(categoryId);
 
@@ -68,6 +74,10 @@ public class CategoriesService {
     }
 
     public Category updateCategoryByName(String categoryName, String categoryDescription, String categoryIcon) throws Exception {
+
+        if(categoryName.equals(null) || categoryDescription.equals(null) || categoryIcon.equals(null)){
+            throw new MissingFieldsException();
+        }
         // carrega categoria
         Category updatedCategory = findCategoryByName(categoryName);
 
@@ -100,6 +110,10 @@ public class CategoriesService {
     }
 
     public Category findCategoryById(UUID categoryId){
+        if(categoryId.equals(null)){
+            throw new MissingFieldsException();
+        }
+
         TypedQuery<Category> theQuery = entityManager.createQuery(
                 "FROM Category WHERE categoryId=:theId", Category.class);
 
@@ -113,6 +127,10 @@ public class CategoriesService {
     }
 
     public Category findCategoryByName(String categoryName){
+
+        if(categoryName.equals(null)){
+            throw new MissingFieldsException();
+        }
         TypedQuery<Category> theQuery = entityManager.createQuery(
                 "FROM Category WHERE categoryName=:theName", Category.class);
 
@@ -136,6 +154,10 @@ public class CategoriesService {
     }
 
     public void deleteCategoryById(UUID categoryId) throws Exception {
+        if(categoryId.equals(null)){
+            throw new MissingFieldsException();
+        }
+
         // instancia a categoria
         Category theCategory = findCategoryById(categoryId);
 
@@ -145,6 +167,9 @@ public class CategoriesService {
     }
 
     public void deleteCategoryByName(String categoryName) throws Exception {
+        if(categoryName.equals(null)){
+            throw new MissingFieldsException();
+        }
         // instancia a categoria
         Category theCategory = findCategoryByName(categoryName);
 
