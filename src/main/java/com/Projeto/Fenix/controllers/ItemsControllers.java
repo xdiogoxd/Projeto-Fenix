@@ -1,8 +1,10 @@
 package com.Projeto.Fenix.controllers;
 
+import com.Projeto.Fenix.domain.items.Category;
 import com.Projeto.Fenix.domain.items.Item;
 import com.Projeto.Fenix.domain.user.User;
 import com.Projeto.Fenix.dtos.ItemsDTO;
+import com.Projeto.Fenix.services.CategoriesService;
 import com.Projeto.Fenix.services.ItemsService;
 import com.Projeto.Fenix.services.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,35 +23,41 @@ public class ItemsControllers {
     ItemsService itemsService;
 
     @Autowired
+    CategoriesService categoriesService;
+
+    @Autowired
     UserService userService;
 
     @PostMapping
     public ResponseEntity<Item> addNewItem(HttpServletRequest request, @RequestBody ItemsDTO itemsDTO) throws Exception {
         User theUser = userService.findUserByToken(request);
+        Category theItemCategory = categoriesService.findCategoryByName(itemsDTO.itemCategory());
 
         userService.validateUserAuthorization(theUser);
 
-        Item newItem = itemsService.addNewItem(itemsDTO.itemName(), itemsDTO.itemDescription(), itemsDTO.itemCategory());
+        Item newItem = itemsService.addNewItem(itemsDTO.itemName(), itemsDTO.itemDescription(), theItemCategory);
         return new ResponseEntity<>(newItem, HttpStatus.CREATED);
     }
 
     @PutMapping("/name")
     public ResponseEntity<Item> updateItemByName(HttpServletRequest request, @RequestBody ItemsDTO itemsDTO) throws Exception{
         User theUser = userService.findUserByToken(request);
+        Category theItemCategory = categoriesService.findCategoryByName(itemsDTO.itemCategory());
 
         userService.validateUserAuthorization(theUser);
 
-        Item updatedItem = itemsService.updateItemByName(itemsDTO.itemName(), itemsDTO.itemDescription(), itemsDTO.itemImage(), itemsDTO.itemBrand());
+        Item updatedItem = itemsService.updateItemByName(itemsDTO.itemName(), itemsDTO.itemDescription(), theItemCategory, itemsDTO.itemImage(), itemsDTO.itemBrand());
         return new ResponseEntity<>(updatedItem, HttpStatus.OK);
     }
 
     @PutMapping("/id")
     public ResponseEntity<Item> updateItemById(HttpServletRequest request, @RequestBody ItemsDTO itemsDTO) throws Exception{
         User theUser = userService.findUserByToken(request);
+        Category theItemCategory = categoriesService.findCategoryByName(itemsDTO.itemCategory());
 
         userService.validateUserAuthorization(theUser);
 
-        Item updatedItem = itemsService.updateItemById(itemsDTO.itemId(), itemsDTO.itemName(), itemsDTO.itemDescription(), itemsDTO.itemImage(), itemsDTO.itemBrand(), itemsDTO.itemCategory());
+        Item updatedItem = itemsService.updateItemById(itemsDTO.itemId(), itemsDTO.itemName(), itemsDTO.itemDescription(), itemsDTO.itemImage(), itemsDTO.itemBrand(), theItemCategory);
         return new ResponseEntity<>(updatedItem, HttpStatus.OK);
     }
 

@@ -73,7 +73,7 @@ public class ItemsService {
             throw new ItemAlreadyExistException();
         }
     }
-    public Item updateItemByName(String itemName, String itemDescription,
+    public Item updateItemByName(String itemName, String itemDescription, Category itemCategory,
                                String itemImage, String itemBrand) throws Exception {
         // instancia o item com que será atualizado
         Item theUpdatedItem = findItemByName(itemName);
@@ -83,6 +83,7 @@ public class ItemsService {
 
             theUpdatedItem.setItemName(itemName);
             theUpdatedItem.setItemDescription(itemDescription);
+            theUpdatedItem.setItemCategory(itemCategory);
             theUpdatedItem.setItemImage(itemImage);
             theUpdatedItem.setItemBrand(itemBrand);
 

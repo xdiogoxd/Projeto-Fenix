@@ -44,10 +44,6 @@ public class User implements UserDetails {
     @Column(name = "display_name")
     private String userDisplayName;
 
-    @ManyToOne()
-    @PrimaryKeyJoinColumn()
-    private ListMembers memberOf;
-
     public User(String username, String password, String userEmail) {
         this.userUsername = username;
         this.userPassword = password;
