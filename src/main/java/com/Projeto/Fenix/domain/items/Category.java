@@ -18,6 +18,12 @@ import java.util.UUID;
 @Table(name = "categories")
 public class Category {
 
+    public Category(String categoryName, String categoryDescription, String categoryIcon) {
+        this.categoryName = categoryName;
+        this.categoryDescription = categoryDescription;
+        this.categoryIcon = categoryIcon;
+    }
+
     @Id
     @Column(name = "id_category")
     private UUID categoryId;

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -27,154 +28,144 @@ public class CategoriesService {
 
     public Category addNewCategory(String categoryName, String categoryDescription,
                                    String categoryIcon) throws Exception {
-        if(categoryName.equals(null) || categoryDescription.equals(null) || categoryIcon.equals(null)){
-            throw new MissingFieldsException();
+        if(categoryName != null && categoryDescription != null && categoryIcon != null){
+            try {
+                findCategoryByName(categoryName);
+            }catch (Exception e){
+
+                UUID theId = uuidService.generateUUID();
+
+                Category theNewCategory = new Category();
+
+                theNewCategory.setCategoryId(theId);
+                theNewCategory.setCategoryName(categoryName);
+                theNewCategory.setCategoryDescription(categoryDescription);
+                theNewCategory.setCategoryIcon(categoryIcon);
+                return categoriesRepository.save(theNewCategory);
+            }
+            throw new CategoryAlreadyExistException();
+            //Seta os atributos para a nova categoria e cria a categoria
         }
+        throw new MissingFieldsException();
 
         // Valida se o nome da categoria está disponível para uso
-        if (validaCategoryName(categoryName)) {
-            //Seta os atributos para a nova categoria e cria a categoria
-            UUID theId = uuidService.generateUUID();
-
-            Category theNewCategory = new Category();
-
-            theNewCategory.setCategoryId(theId);
-            theNewCategory.setCategoryName(categoryName);
-            theNewCategory.setCategoryDescription(categoryDescription);
-            theNewCategory.setCategoryIcon(categoryIcon);
-
-            return categoriesRepository.save(theNewCategory);
-        }else{
-            throw new CategoryAlreadyExistException();
-        }
 
     }
 
-    public Category updateCategoryById(UUID categoryId, String categoryName, String categoryDescription, String categoryIcon) throws Exception {
-        if(categoryId.equals(null) || categoryName.equals(null) || categoryDescription.equals(null) || categoryIcon.equals(null)){
-            throw new MissingFieldsException();
+    public Category updateCategoryById(UUID categoryId, String categoryName, String categoryDescription,
+                                       String categoryIcon) throws Exception {
+        if(categoryId != null && categoryName != null && categoryDescription != null && categoryIcon != null){
+            Category updatedCategory = findCategoryById(categoryId);
+            // checa se o nome da categoria foi atualizado
+            if(updatedCategory.getCategoryName().equals(categoryName)){
+                // atualiza os campos e salva no banco de dados
+                updatedCategory.setCategoryDescription(categoryDescription);
+                updatedCategory.setCategoryIcon(categoryIcon);
+
+                return categoriesRepository.save(updatedCategory);
+            }
+            else {
+                try {
+                    findCategoryByName(categoryName);
+                    throw new CategoryAlreadyExistException();
+                } catch (CategoryNotFoundException e){
+                    updatedCategory.setCategoryName(categoryName);
+                    updatedCategory.setCategoryDescription(categoryDescription);
+                    updatedCategory.setCategoryIcon(categoryIcon);
+                    return categoriesRepository.save(updatedCategory);
+                }
+            }
         }
-
-        // carrega categoria
-        Category updatedCategory = findCategoryById(categoryId);
-
-        // checa se o nome da categoria foi atualizado e se foi se esse novo nome já existe no banco de dados
-        if(validaCategoryName(categoryName) || updatedCategory.getCategoryName().equals(categoryName)){
-            // atualiza os campos e salva no banco de dados
-
-            updatedCategory.setCategoryName(categoryName);
-            updatedCategory.setCategoryDescription(categoryDescription);
-            updatedCategory.setCategoryIcon(categoryIcon);
-
-            return categoriesRepository.save(updatedCategory);
-        }
-        else {
-            throw new CategoryAlreadyExistException();
-        }
+        throw new MissingFieldsException();
     }
 
     public Category updateCategoryByName(String categoryName, String categoryDescription, String categoryIcon) throws Exception {
 
-        if(categoryName.equals(null) || categoryDescription.equals(null) || categoryIcon.equals(null)){
-            throw new MissingFieldsException();
-        }
-        // carrega categoria
-        Category updatedCategory = findCategoryByName(categoryName);
+        if(categoryName != null && categoryDescription != null && categoryIcon != null){
+            // carrega categoria
+            Category updatedCategory = findCategoryByName(categoryName);
 
-        // checa se o nome da categoria foi atualizado e se foi se esse novo nome já existe no banco de dados
-        if(validaCategoryName(categoryName) || updatedCategory.getCategoryName().equals(categoryName)){
             // atualiza os campos e salva no banco de dados
-
             updatedCategory.setCategoryName(categoryName);
             updatedCategory.setCategoryDescription(categoryDescription);
             updatedCategory.setCategoryIcon(categoryIcon);
 
             return categoriesRepository.save(updatedCategory);
         }
-        else {
-            throw new CategoryAlreadyExistException();
-        }
+        throw new MissingFieldsException();
+
     }
 
     public List<Category> listAllCategories(){
 
-        TypedQuery<Category> theQuery = entityManager.createQuery(
-                "FROM Category", Category.class);
-
         // Lista todos os itens do banco de dados
         try {
-            return theQuery.getResultList();
+            return categoriesRepository.findAllCategories();
         }catch (Exception e){
             throw new CategoryNotFoundException();
         }
     }
 
     public Category findCategoryById(UUID categoryId){
-        if(categoryId.equals(null)){
-            throw new MissingFieldsException();
-        }
 
-        TypedQuery<Category> theQuery = entityManager.createQuery(
-                "FROM Category WHERE categoryId=:theId", Category.class);
-
-        theQuery.setParameter("theId", categoryId);
-        // Procura item por ID
-        try {
-            return theQuery.getSingleResult();
-        }catch (Exception e){
+        if(categoryId != null){
+            Category theCategory = categoriesRepository.findCategoryByCategoryId(categoryId);
+            if (theCategory != null) {
+                return theCategory;
+            }
+            else{
             throw new CategoryNotFoundException();
-        }
+            }
+        }else
+        throw new MissingFieldsException();
     }
 
     public Category findCategoryByName(String categoryName){
 
-        if(categoryName.equals(null)){
-            throw new MissingFieldsException();
+        if(categoryName != null){
+            Category theCategory = categoriesRepository.findCategoryByCategoryName(categoryName);
+            if (theCategory != null) {
+                return theCategory;
+            }
+            else{
+                throw new CategoryNotFoundException();
+            }
         }
-        TypedQuery<Category> theQuery = entityManager.createQuery(
-                "FROM Category WHERE categoryName=:theName", Category.class);
-
-        theQuery.setParameter("theName", categoryName);
+        throw new MissingFieldsException();
+//        TypedQuery<Category> theQuery = entityManager.createQuery(
+//                "FROM Category WHERE categoryName=:theName", Category.class);
+//
+//        theQuery.setParameter("theName", categoryName);
         // Procura item por nome
-        try {
-            return theQuery.getSingleResult();
-        }catch (Exception e){
-            throw new CategoryNotFoundException();
-        }
     }
 
-    Boolean validaCategoryName(String categoryName){
-        //Valida se o nome da categoria está disponível, false = já esta em uso, true = está disponível.
-        try {
-            findCategoryByName(categoryName);
-            return false;
-        }catch (Exception e){
-            return true;
-        }
-    }
+    public void deleteCategoryById(UUID categoryId){
+        if(categoryId != null){
+            // instancia a categoria
+            Category theCategory = findCategoryById(categoryId);
 
-    public void deleteCategoryById(UUID categoryId) throws Exception {
-        if(categoryId.equals(null)){
+            //Deleta a categoria
+            categoriesRepository.delete(theCategory);
+        }else {
             throw new MissingFieldsException();
         }
 
-        // instancia a categoria
-        Category theCategory = findCategoryById(categoryId);
-
-        //Deleta a categoria
-        categoriesRepository.delete(theCategory);
-
     }
 
-    public void deleteCategoryByName(String categoryName) throws Exception {
-        if(categoryName.equals(null)){
+    public void deleteCategoryByName(String categoryName) {
+        if(categoryName != null){
+            // instancia a categoria
+            Category theCategory = findCategoryByName(categoryName);
+
+            if(theCategory == null){
+                throw new CategoryNotFoundException();
+            }
+
+            //Deleta a categoria
+            categoriesRepository.delete(theCategory);
+        }else {
             throw new MissingFieldsException();
         }
-        // instancia a categoria
-        Category theCategory = findCategoryByName(categoryName);
-
-        //Deleta a categoria
-        categoriesRepository.delete(theCategory);
     }
 
 }

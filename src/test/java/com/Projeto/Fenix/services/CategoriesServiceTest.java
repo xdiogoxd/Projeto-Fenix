@@ -1,320 +1,397 @@
 package com.Projeto.Fenix.services;
 
-import com.Projeto.Fenix.FenixApplication;
 import com.Projeto.Fenix.domain.items.Category;
 import com.Projeto.Fenix.exceptions.CategoryAlreadyExistException;
+import com.Projeto.Fenix.exceptions.CategoryNotFoundException;
 import com.Projeto.Fenix.exceptions.MissingFieldsException;
 import com.Projeto.Fenix.repositories.CategoriesRepository;
-import org.junit.jupiter.api.Assertions;
+import jakarta.persistence.EntityManager;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.assertj.core.api.Assertions.assertThatException;
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
-
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
+
+
+@ExtendWith(MockitoExtension.class)
 class CategoriesServiceTest {
 
     @Mock
-    UuidService uuidService;
+    private UuidService uuidService;
 
     @Mock
-    CategoriesRepository categoriesRepository;
+    private CategoriesRepository categoriesRepository;
 
-    @Autowired
     @InjectMocks
-    CategoriesService categoriesService;
+    private CategoriesService categoriesService;
+
+    private Category testCategory;
 
     @BeforeEach
-    void setup(){
-        MockitoAnnotations.initMocks(this);
+    public void setup(){
+        testCategory = new Category(
+                "Cozinha",
+                "Itens de cozinha",
+                "CozinhaIcon"
+        );
     }
 
+    @DisplayName("Adiciona uma nova categoria com sucesso")
     @Test
-    @DisplayName("Adiciona uma categoria com sucesso")
-    void addNewCategorySuccess() throws Exception {
-        String categoryName = "Category";
-        String categoryDescription = "Description";
-        String categoryIcon = "Icon";
+    void addNewCategorySuccessful() throws Exception {
 
-        categoriesService.addNewCategory(categoryName,categoryDescription,categoryIcon);
+        given(uuidService.generateUUID()).willReturn(UUID.randomUUID());
+        given(categoriesRepository.save(any(Category.class))).willReturn(testCategory);
+
+        Category savedCategory = categoriesService.addNewCategory(
+                testCategory.getCategoryName(),
+                testCategory.getCategoryDescription(),
+                testCategory.getCategoryIcon()
+        );
 
         verify(categoriesRepository, times(1)).save(any());
+        assertEquals(savedCategory.getCategoryName(), testCategory.getCategoryName());
 
     }
-//Voltarei neste tópico mais tarde, achei um pouco confuso, então vou estudar melhor para aplicar os testes unitários e de integração
 
-//    @Test
-//    @DisplayName("Tenta adicionar uma categoria com nome duplicado")
-//    void addNewCategoryNameDuplicated() throws Exception {
-//        String categoryName = "Category";
-//        String categoryDescription = "Description";
-//        String categoryIcon = "Icon";
-//
-//        when(categoriesService.validaCategoryName(categoryName)).thenReturn(false);
-//
-//
-//        Exception thrown = Assertions.assertThrows(CategoryAlreadyExistException.class,() -> {
-//            categoriesService.addNewCategory(categoryName,categoryDescription,categoryIcon);
-//        });
-//
-//        Assertions.assertEquals("Nome indisponível", thrown.getMessage());
-//    }
-//
-//    @Test
-//    @DisplayName("Tenta adicionar uma categoria campo nulo")
-//    void addNewCategoryMissingFields() throws Exception {
-//        String categoryName = "Category";
-//        String categoryDescription = "Description1";
-//        String categoryIcon = new String();
-//
-//        Exception thrown = Assertions.assertThrows(MissingFieldsException.class,() -> {
-//            categoriesService.addNewCategory(categoryName,categoryDescription,categoryIcon);
-//        });
-//
-//        Assertions.assertEquals("Algum ou alguns campos mandatórios não foram preenchidos", thrown.getMessage());
-//    }
-//
-//
-//    @Test
-//    @DisplayName("Atualiza uma categoria por Id com sucesso")
-//    void updateCategoryByIdSuccessful() throws Exception {
-//
-//
-//        String updatedCategoryName = "Category1";
-//        String updatedCategoryDescription = "Description1";
-//        String updatedCategoryIcon = "Icon1";
-//
-//        categoriesService.updateCategoryById(uuidService.generateUUID(), updatedCategoryName, updatedCategoryDescription,updatedCategoryIcon);
-//
-//        verify(categoriesRepository, times(1)).save(any());
-//
-//    }
+    @DisplayName("Falha ao adicionar uma categoria com o nome duplicado")
+    @Test
+    void addNewCategoryDuplicatedName() throws Exception {
+        Category testCategory2 = new Category(
+                "Cozinha",
+                "Itens de cozinha",
+                "CozinhaIcon"
+        );
 
-//    @Test
-//    @DisplayName("Tenta atualizar categoria com ID invalido")
-//    void updateCategoryByIdNotFound() throws Exception {
-//        UUID theId = uuidService.generateUUID();
-//        String categoryName = "Category2";
-//        String categoryDescription = "Description1";
-//        String categoryIcon = "Icon1";
-//
-//        categoriesService.updateCategoryById(theId,categoryName,categoryDescription,categoryIcon);
-//
-//        assertThatException();
-//    }
-//
-//    @Test
-//    @DisplayName("Tenta atualizar categoria com campos não preenchidos")
-//    void updateCategoryByIdMissingFields() throws Exception {
-//
-//
-//        Category newCategory = new Category(uuidService.generateUUID(),"Category","Description","Icon");
-//
-//        String updatedCategoryName = "Category";
-//        String updatedCategoryDescription = "Description1";
-//        String updatedCategoryIcon = null;
-//
-//        categoriesService.updateCategoryById(newCategory.getCategoryId(), updatedCategoryName, updatedCategoryDescription,updatedCategoryIcon);
-//
-//        assertThatException();
-//
-//    }
-//
-//    @Test
-//    @DisplayName("Tenta atualizar categoria com name duplicado")
-//    void updateCategoryByIdNameAlreadyTaken() throws Exception {
-//        String categoryName = "Category";
-//        String categoryName2 = "Category2";
-//        String categoryDescription = "Description";
-//        String categoryIcon = "Icon";
-//
-//        Category newCategory = categoriesService.addNewCategory(categoryName,categoryDescription,categoryIcon);
-//        categoriesService.addNewCategory(categoryName2,categoryDescription,categoryIcon);
-//
-//        String updatedCategoryName = "Category2";
-//        String updatedCategoryDescription = "Description1";
-//        String updatedCategoryIcon = "Icon1";
-//
-//        categoriesService.updateCategoryById(newCategory.getCategoryId(), updatedCategoryName, updatedCategoryDescription,updatedCategoryIcon);
-//
-//        assertThatException();
-//
-//        categoriesService.deleteCategoryByName(categoryName);
-//
-//    }
-//
-//    @Test
-//    @DisplayName("Atualiza uma categoria por nome")
-//    void updateCategoryByNameSuccessful() throws Exception {
-//        String updatedCategoryName = "Category";
-//        String updatedCategoryDescription = "Description1";
-//        String updatedCategoryIcon = "Icon";
-//
-//        categoriesService.updateCategoryByName(updatedCategoryName, updatedCategoryDescription,updatedCategoryIcon);
-//
-//        categoriesService.deleteCategoryByName(updatedCategoryName);
-//    }
-//
-//    @Test
-//    @DisplayName("Tenta atualizar categoria com Nome invalido")
-//    void updateCategoryByNameNotFound() throws Exception {
-//        String categoryName = "RandomName";
-//        String categoryDescription = "Description1";
-//        String categoryIcon = "Icon1";
-//
-//        categoriesService.updateCategoryByName(categoryName,categoryDescription,categoryIcon);
-//
-//        assertThatException();
-//    }
-//
-//    @Test
-//    @DisplayName("Tenta atualizar categoria com campos não preenchidos")
-//    void updateCategoryByNameMissingFields() throws Exception {
-//        String categoryName = "Category";
-//        String categoryDescription = "Description";
-//        String categoryIcon = "Icon1";
-//
-//        categoriesService.addNewCategory(categoryName,categoryDescription,categoryIcon);
-//
-//        String updatedCategoryName = "Category";
-//        String updatedCategoryDescription = "Description";
-//        String updatedCategoryIcon = null;
-//
-//        categoriesService.updateCategoryByName(updatedCategoryName, updatedCategoryDescription,updatedCategoryIcon);
-//
-//        assertThatException();
-//
-//        categoriesService.deleteCategoryByName(categoryName);
-//    }
-//
-//    @Test
-//    @DisplayName("Tenta atualizar categoria com name duplicado")
-//    void updateCategoryByNameAlreadyTaken() throws Exception {
-//        Category newCategory = new Category(uuidService.generateUUID(),"Category","Description","Icon");
-//        Category newCategory2 = new Category(uuidService.generateUUID(),"Category2","Description","Icon");
-//
-//        String updatedCategoryName = "Category2";
-//        String updatedCategoryDescription = "Description";
-//        String updatedCategoryIcon = "Icon";
-//
-//        categoriesService.updateCategoryById(newCategory.getCategoryId(), updatedCategoryName, updatedCategoryDescription,updatedCategoryIcon);
-//
-//        assertThatException();
-//
-//    }
-//
-//    @Test
-//    @DisplayName("Lista todas categorias")
-//    void listAllCategories() throws Exception {
-//        Category newCategory = new Category(uuidService.generateUUID(),"Category","Description","Icon");
-//
-//        List<Category> theCategories = categoriesService.listAllCategories();
-//
-//        assertThat(theCategories).isNotEmpty();
-//    }
-//
-//    @Test
-//    @DisplayName("Localiza categoria por Id")
-//    void findCategoryByIdSuccessful() throws Exception {
-//        Category newCategory = new Category(uuidService.generateUUID(),"Category","Description","Icon");
-//
-//        Category foundCategory = categoriesService.findCategoryById(newCategory.getCategoryId());
-//
-//        assertThat(foundCategory).isNot(null);
-//
-//    }
-//
-//    @Test
-//    @DisplayName("Falha em categoria por Id")
-//    void findCategoryByIdNotFound(){
-//        UUID theId = uuidService.generateUUID();
-//        categoriesService.findCategoryById(theId);
-//
-//        assertThatException();
-//    }
-//
-//    @Test
-//    @DisplayName("Localiza categoria por nome")
-//    void findCategoryByNameSuccess() throws Exception {
-//        String categoryName = "Category";
-//        String categoryDescription = "Description";
-//        String categoryIcon = "Icon";
-//
-//        Category newCategory = categoriesService.addNewCategory(categoryName,categoryDescription,categoryIcon);
-//
-//        Category foundCategory = categoriesService.findCategoryByName(newCategory.getCategoryName());
-//
-//        assertThat(foundCategory).isNot(null);
-//
-//        categoriesService.deleteCategoryByName(categoryName);
-//    }
-//
-//    @Test
-//    @DisplayName("Falha ao localizar categoria por nome invalido")
-//    void findCategoryByNameFailed() throws Exception {
-//        String categoryName = "Category";
-//
-//        categoriesService.findCategoryByName(categoryName);
-//
-//        assertThatException();
-//    }
-//
-//    @Test
-//    @DisplayName("Deleta categoria por ID")
-//    void deleteCategoryByIdSuccess() throws Exception {
-//        Category newCategory = new Category(uuidService.generateUUID(),"Category","Description","Icon");
-//
-//        categoriesService.deleteCategoryById(newCategory.getCategoryId());
-//
-//        assertThat(newCategory).is(null);
-//    }
-//
-//    @Test
-//    @DisplayName("Falha ao deletar categoria por ID invalido")
-//    void deleteCategoryByIdNotFound() throws Exception {
-//        UUID theId = uuidService.generateUUID();
-//
-//        categoriesService.deleteCategoryById(theId);
-//
-//        assertThatException();
-//    }
-//
-//
-//    @Test
-//    @DisplayName("Deleta categoria por nome")
-//    void deleteCategoryByNameSuccess() throws Exception {
-//        Category newCategory = new Category(uuidService.generateUUID(),"Category","Description","Icon");
-//
-//        categoriesService.deleteCategoryByName(newCategory.getCategoryName());
-//
-//        assertThat(newCategory).isNull();
-//    }
-//
-//    @Test
-//    @DisplayName("Falha ao deletar categoria por ID")
-//    void deleteCategoryByNameNotFound() throws Exception {
-//        String categoryName = "Category";
-//
-//        categoriesService.deleteCategoryByName(categoryName);
-//
-//        assertThatException();
-//    }
+        given(categoriesRepository.findCategoryByCategoryName(anyString())).willReturn(testCategory2);
+
+        assertThrows(CategoryAlreadyExistException.class, () -> {
+            categoriesService.addNewCategory(
+                testCategory.getCategoryName(),
+                testCategory.getCategoryDescription(),
+                testCategory.getCategoryIcon()
+        );
+        });
+
+        verify(categoriesRepository, times(0)).save(any());
+
+
+    }
+
+    @DisplayName("Falha ao adicionar categoria faltando campo")
+    @Test
+    void addNewCategoryWithNullFields() throws Exception {
+
+        assertThrows(MissingFieldsException.class, () -> {
+            categoriesService.addNewCategory(
+                    testCategory.getCategoryName(),
+                    null,
+                    testCategory.getCategoryIcon()
+            );
+        });
+
+        verify(categoriesRepository, times(0)).save(any());
+
+    }
+
+    @DisplayName("Atualiza categoria por id com sucesso")
+    @Test
+    void updateCategoryByIdSuccess() throws Exception {
+        testCategory.setCategoryId(UUID.randomUUID());
+
+        given(categoriesRepository.findCategoryByCategoryId(testCategory.getCategoryId())).willReturn(testCategory);
+        given(categoriesRepository.save(any(Category.class))).willReturn(testCategory);
+
+        Category savedCategory = categoriesService.updateCategoryById(
+                testCategory.getCategoryId(),
+                testCategory.getCategoryName(),
+                testCategory.getCategoryDescription(),
+                testCategory.getCategoryIcon()
+        );
+
+        verify(categoriesRepository, times(1)).save(any());
+        assertEquals(savedCategory.getCategoryName(), testCategory.getCategoryName());
+
+    }
+
+    @DisplayName("Atualiza categoria por id com sucesso com um nome diferente do original")
+    @Test
+    void updateCategoryByIdSuccessWithANewName() throws Exception {
+        testCategory.setCategoryId(UUID.randomUUID());
+
+        Category testCategory2 = new Category();
+
+        testCategory2.setCategoryName("Category2");
+        testCategory2.setCategoryDescription("Description Category2");
+        testCategory2.setCategoryIcon("Icon");
+
+        given(categoriesRepository.findCategoryByCategoryId(testCategory.getCategoryId())).willReturn(testCategory);
+        given(categoriesRepository.save(any(Category.class))).willReturn(testCategory);
+
+
+        Category savedCategory = categoriesService.updateCategoryById(
+                testCategory.getCategoryId(),
+                testCategory2.getCategoryName(),
+                testCategory2.getCategoryDescription(),
+                testCategory2.getCategoryIcon()
+        );
+
+        verify(categoriesRepository, times(1)).save(any());
+        assertEquals(savedCategory.getCategoryName(), testCategory.getCategoryName());
+
+    }
+
+    @DisplayName("Tenta atualizar categoria por id com nome já em uso")
+    @Test
+    void updateCategoryByIdWithNameAlreadyInUse() throws Exception {
+        testCategory.setCategoryId(UUID.randomUUID());
+
+        Category testCategory2 = new Category();
+
+        testCategory2.setCategoryId(UUID.randomUUID());
+        testCategory2.setCategoryName("Category2");
+        testCategory2.setCategoryDescription("Description Category2");
+        testCategory2.setCategoryIcon("Icon");
+
+        given(categoriesRepository.findCategoryByCategoryId(testCategory.getCategoryId())).willReturn(testCategory);
+        given(categoriesRepository.findCategoryByCategoryName(testCategory2.getCategoryName())).willReturn(testCategory2);
+
+        assertThrows(CategoryAlreadyExistException.class, () -> {
+            categoriesService.updateCategoryById(
+                    testCategory.getCategoryId(),
+                    testCategory2.getCategoryName(),
+                    testCategory2.getCategoryDescription(),
+                    testCategory2.getCategoryIcon()
+            );
+        });
+
+        verify(categoriesRepository, times(0)).save(any());
+
+    }
+
+    @DisplayName("Tenta atualizar categoria por id com campos nulos")
+    @Test
+    void updateCategoryByWithMissingFields() throws Exception {
+        testCategory.setCategoryId(UUID.randomUUID());
+
+        assertThrows(MissingFieldsException.class, () -> {
+            categoriesService.updateCategoryById(
+                    testCategory.getCategoryId(),
+                    testCategory.getCategoryName(),
+                    null,
+                    testCategory.getCategoryIcon()
+            );
+        });
+
+        verify(categoriesRepository, times(0)).save(any());
+
+    }
+
+    @DisplayName("Atualiza categoria por nome com sucesso")
+    @Test
+    void updateCategoryByName() throws Exception {
+        testCategory.setCategoryId(UUID.randomUUID());
+
+        testCategory.setCategoryId(UUID.randomUUID());
+
+        given(categoriesRepository.findCategoryByCategoryName(testCategory.getCategoryName())).willReturn(testCategory);
+        given(categoriesRepository.save(any(Category.class))).willReturn(testCategory);
+
+        Category savedCategory = categoriesService.updateCategoryByName(
+                testCategory.getCategoryName(),
+                testCategory.getCategoryDescription(),
+                testCategory.getCategoryIcon()
+        );
+
+        verify(categoriesRepository, times(1)).save(any());
+        assertEquals(savedCategory.getCategoryName(), testCategory.getCategoryName());
+    }
+
+    @DisplayName("Tenta atualizar categoria por nome com campos nulos")
+    @Test
+    void updateCategoryMissingFields() {
+
+        assertThrows(MissingFieldsException.class, () -> {
+            categoriesService.updateCategoryById(
+                    testCategory.getCategoryId(),
+                    testCategory.getCategoryName(),
+                    null,
+                    testCategory.getCategoryIcon()
+            );
+        });
+
+        verify(categoriesRepository, times(0)).findCategoryByCategoryName(any());
+        verify(categoriesRepository, times(0)).save(any());
+    }
+
+    @DisplayName("Retorna todas as categorias com sucesso")
+    @Test
+    void listAllCategoriesSuccess() {
+
+        List<Category> testCategories = new ArrayList<>();
+        testCategories.add(testCategory);
+
+        given(categoriesRepository.findAllCategories()).willReturn(testCategories);
+
+        List<Category> theCategories = categoriesService.listAllCategories();
+
+        verify(categoriesRepository, times(1)).findAllCategories();
+    }
+
+
+    @DisplayName("Lista todas categorias com zero resultados")
+    @Test
+    void listAllCategoriesWithNoResults() {
+
+        given(categoriesRepository.findAllCategories()).willThrow(CategoryNotFoundException.class);
+
+        assertThrows(CategoryNotFoundException.class, () -> {
+            categoriesService.listAllCategories();
+        });
+        verify(categoriesRepository, times(1)).findAllCategories();
+    }
+
+    @DisplayName("Procura categoria por ID com sucesso")
+    @Test
+    void findCategoryByIdSuccess() {
+        testCategory.setCategoryId(UUID.randomUUID());
+
+
+        given(categoriesRepository.findCategoryByCategoryId(any())).willReturn(testCategory);
+
+        Category theCategory = categoriesService.findCategoryById(testCategory.getCategoryId());
+
+        verify(categoriesRepository, times(1)).findCategoryByCategoryId(any());
+        assertEquals(theCategory.getCategoryName(), testCategory.getCategoryName());
+    }
+
+    @DisplayName("Procura categoria por ID sem resultados")
+    @Test
+    void findCategoryByIdWithNoResults() {
+        testCategory.setCategoryId(UUID.randomUUID());
+
+        given(categoriesRepository.findCategoryByCategoryId(any())).willReturn(null);
+
+        assertThrows(CategoryNotFoundException.class, () -> {
+            categoriesService.findCategoryById(testCategory.getCategoryId());
+        });
+
+        verify(categoriesRepository, times(1)).findCategoryByCategoryId(any());
+    }
+
+    @DisplayName("Procura categoria por ID com campo nulo")
+    @Test
+    void findCategoryByIdWithNullId() {
+        assertThrows(MissingFieldsException.class, () -> {
+            categoriesService.findCategoryById(null);
+        });
+
+        verify(categoriesRepository,times(0)).findCategoryByCategoryId(any());
+    }
+
+    @DisplayName("Procura categoria por nome com sucesso")
+    @Test
+    void findCategoryByName() {
+        given(categoriesRepository.findCategoryByCategoryName(any())).willReturn(testCategory);
+
+        Category theCategory = categoriesService.findCategoryByName(testCategory.getCategoryName());
+
+        verify(categoriesRepository, times(1)).findCategoryByCategoryName(any());
+        assertEquals(theCategory.getCategoryName(), testCategory.getCategoryName());
+    }
+
+    @DisplayName("Procura categoria por nome sem resultados")
+    @Test
+    void findCategoryByNameWithNoResults() {
+        given(categoriesRepository.findCategoryByCategoryName(any())).willReturn(null);
+
+        assertThrows(CategoryNotFoundException.class, () -> {
+            categoriesService.findCategoryByName(testCategory.getCategoryName());
+        });
+
+        verify(categoriesRepository, times(1)).findCategoryByCategoryName(any());
+    }
+
+    @DisplayName("Procura categoria por nome com campo nulo")
+    @Test
+    void findCategoryByNameWithNullFields() {
+        assertThrows(MissingFieldsException.class, () -> {
+            categoriesService.findCategoryById(null);
+        });
+
+        verify(categoriesRepository,times(0)).findCategoryByCategoryName(any());
+    }
+
+    @DisplayName("Deleta categoria por ID com sucesso")
+    @Test
+    void deleteCategoryByIdSuccess() throws Exception {
+        testCategory.setCategoryId(UUID.randomUUID());
+
+        given(categoriesRepository.findCategoryByCategoryId(any())).willReturn(testCategory);
+        willDoNothing().given(categoriesRepository).delete(any());
+
+        categoriesService.deleteCategoryById(testCategory.getCategoryId());
+
+        verify(categoriesRepository, times(1)).delete(any());
+    }
+    @DisplayName("Tenta deletar categoria por ID com campo nulo")
+    @Test
+    void deleteCategoryByIdWithNullField() {
+        assertThrows(MissingFieldsException.class, () -> {
+            categoriesService.deleteCategoryById(null);
+        });
+
+        verify(categoriesRepository,times(0)).delete(any());
+    }
+
+    @DisplayName("Deleta categoria por nome com sucesso")
+    @Test
+    void deleteCategoryByNameSuccess() throws Exception {
+        given(categoriesRepository.findCategoryByCategoryName(any())).willReturn(testCategory);
+
+        categoriesService.deleteCategoryByName(testCategory.getCategoryName());
+
+        verify(categoriesRepository, times(1)).delete(any());
+    }
+
+    @DisplayName("Tenta deletar categoria com nome não encontrado")
+    @Test
+    void deleteCategoryByNameWithNameNotFound() throws Exception {
+        given(categoriesRepository.findCategoryByCategoryName(any())).willReturn(null);
+
+        assertThrows(CategoryNotFoundException.class, () -> {
+            categoriesService.deleteCategoryByName(testCategory.getCategoryName());
+        });
+
+        verify(categoriesRepository, times(0)).delete(any());
+    }
+
+    @DisplayName("Tenta deletar categoria com entrada nula")
+    @Test
+    void deleteCategoryByNameWithNullName() {
+        assertThrows(MissingFieldsException.class, () -> {
+            categoriesService.deleteCategoryByName(null);
+        });
+
+        verify(categoriesRepository,times(0)).delete(any());
+    }
 }
