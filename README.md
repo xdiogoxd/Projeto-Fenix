@@ -11,13 +11,13 @@ Tecnologias utilizadas no projeto:
 * MySQL
 
 Features desenvolvidos:
-RestAPI
-Entities
-Repositories
-Services
-Controllers
-Testes unitários(Em desenvolvimento)
-Testes de integração(Em desenvolvimento)
+* RestAPI
+* Entities
+* Repositories
+* Services
+* Controllers
+* Testes unitários(Em desenvolvimento)
+* Testes de integração(Em desenvolvimento)
 
   
 O projeto contempla:
