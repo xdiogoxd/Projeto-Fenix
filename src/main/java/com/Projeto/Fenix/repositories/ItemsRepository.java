@@ -6,13 +6,14 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface ItemsRepository extends JpaRepository<Item, String>{
+public interface ItemsRepository extends JpaRepository<Item, UUID>{
 
-//    Optional<Item> findItemByItemId(String theId);
+    Item findItemByItemId(UUID theId);
 
-//    Optional<Item> findItemByItemName(String theName);
+    Item findItemByItemName(String theName);
 
-//    List<Item> listAllItems();
+    List<Item> listAllItems();
 }

@@ -26,55 +26,56 @@ public class CategoriesService {
     @Autowired
     EntityManager entityManager;
 
-    public Category addNewCategory(String categoryName, String categoryDescription,
-                                   String categoryIcon) throws Exception {
+    public Category addNewCategory(String categoryName, String categoryDescription, String categoryIcon) throws Exception {
+        //Valida se nenhum dos campos enviados foram nulos
         if(categoryName != null && categoryDescription != null && categoryIcon != null){
+            //Valida se o nome já está sendo utilizado
             try {
                 findCategoryByName(categoryName);
             }catch (Exception e){
-
+                // Seta todos os atributos da categoria e cria o item
                 UUID theId = uuidService.generateUUID();
-
                 Category theNewCategory = new Category();
-
                 theNewCategory.setCategoryId(theId);
                 theNewCategory.setCategoryName(categoryName);
                 theNewCategory.setCategoryDescription(categoryDescription);
                 theNewCategory.setCategoryIcon(categoryIcon);
+
+                //Salva categoria no banco de dados
                 return categoriesRepository.save(theNewCategory);
             }
+            //Caso o nome da categoria já esteja sendo utilizada, retorna exceção
             throw new CategoryAlreadyExistException();
-            //Seta os atributos para a nova categoria e cria a categoria
         }
         throw new MissingFieldsException();
-
-        // Valida se o nome da categoria está disponível para uso
-
     }
 
     public Category updateCategoryById(UUID categoryId, String categoryName, String categoryDescription,
+        //Valida se nenhum dos campos é nulo
                                        String categoryIcon) throws Exception {
         if(categoryId != null && categoryName != null && categoryDescription != null && categoryIcon != null){
-            Category updatedCategory = findCategoryById(categoryId);
-            // checa se o nome da categoria foi atualizado
-            if(updatedCategory.getCategoryName().equals(categoryName)){
+            Category updatedCategory = new Category();
+            try{
+                updatedCategory = findCategoryById(categoryId);
                 // atualiza os campos e salva no banco de dados
+                updatedCategory.setCategoryName(categoryName);
                 updatedCategory.setCategoryDescription(categoryDescription);
                 updatedCategory.setCategoryIcon(categoryIcon);
-
-                return categoriesRepository.save(updatedCategory);
+            } catch (Exception e){
+                //Caso a categoria não seja localizada lança exceção
+                throw new CategoryNotFoundException();
             }
-            else {
-                try {
-                    findCategoryByName(categoryName);
-                    throw new CategoryAlreadyExistException();
-                } catch (CategoryNotFoundException e){
-                    updatedCategory.setCategoryName(categoryName);
-                    updatedCategory.setCategoryDescription(categoryDescription);
-                    updatedCategory.setCategoryIcon(categoryIcon);
+            try {
+                Category theCategory = findCategoryByName(categoryName);
+                //Valida se o nome da categoria está disponível
+                if (theCategory.getCategoryId() == updatedCategory.getCategoryId()){
                     return categoriesRepository.save(updatedCategory);
                 }
+            } catch (CategoryNotFoundException e){
+                return categoriesRepository.save(updatedCategory);
             }
+            throw new CategoryAlreadyExistException();
+
         }
         throw new MissingFieldsException();
     }
