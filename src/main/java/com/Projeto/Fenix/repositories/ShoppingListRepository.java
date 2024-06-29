@@ -4,9 +4,12 @@ import com.Projeto.Fenix.domain.shoppingList.ShoppingList;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-@Repository
-public interface ShoppingListRepository extends JpaRepository <ShoppingList, String> {
+import java.util.List;
+import java.util.UUID;
 
-//    List<ShoppingList> listAllListsByUser(String userId);
+@Repository
+public interface ShoppingListRepository extends JpaRepository <ShoppingList, UUID> {
+
+    ShoppingList findShoppingListByListId();
 
     }

@@ -5,7 +5,6 @@ import com.Projeto.Fenix.exceptions.CategoryAlreadyExistException;
 import com.Projeto.Fenix.exceptions.CategoryNotFoundException;
 import com.Projeto.Fenix.exceptions.MissingFieldsException;
 import com.Projeto.Fenix.repositories.CategoriesRepository;
-import jakarta.persistence.EntityManager;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

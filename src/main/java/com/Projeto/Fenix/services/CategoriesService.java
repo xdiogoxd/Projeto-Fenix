@@ -80,21 +80,51 @@ public class CategoriesService {
         throw new MissingFieldsException();
     }
 
-    public Category updateCategoryByName(String categoryName, String categoryDescription, String categoryIcon) throws Exception {
+    public Category updateCategoryByName(String categoryName, String categoryDescription,
+                                         String categoryIcon) throws Exception {
 
+        //Valida se nenhum dos campos é nulo
         if(categoryName != null && categoryDescription != null && categoryIcon != null){
-            // carrega categoria
-            Category updatedCategory = findCategoryByName(categoryName);
+            try {
+                //Procura o item e caso encontre ele, atualiza os campos e salva
+                Category updatedCategory = findCategoryByName(categoryName);
+                updatedCategory.setCategoryName(categoryName);
+                updatedCategory.setCategoryDescription(categoryDescription);
+                updatedCategory.setCategoryIcon(categoryIcon);
+                return categoriesRepository.save(updatedCategory);
+            }catch (Exception e){
+                throw new CategoryNotFoundException();
+            }
 
-            // atualiza os campos e salva no banco de dados
-            updatedCategory.setCategoryName(categoryName);
-            updatedCategory.setCategoryDescription(categoryDescription);
-            updatedCategory.setCategoryIcon(categoryIcon);
-
-            return categoriesRepository.save(updatedCategory);
         }
         throw new MissingFieldsException();
 
+    }
+    public Category findCategoryById(UUID categoryId){
+        //Valida se o input não foi nulo
+        if(categoryId != null){
+            try {
+                Category theCategory = categoriesRepository.findCategoryByCategoryId(categoryId);
+                return theCategory;
+
+            }catch (Exception e){
+                throw new CategoryNotFoundException();
+            }
+        }
+        throw new MissingFieldsException();
+    }
+
+    public Category findCategoryByName(String categoryName){
+
+        if(categoryName != null){
+            try {
+                Category theCategory = categoriesRepository.findCategoryByCategoryName(categoryName);
+                return theCategory;
+            }catch (Exception E){
+                throw new CategoryNotFoundException();
+            }
+        }
+        throw new MissingFieldsException();
     }
 
     public List<Category> listAllCategories(){
@@ -107,63 +137,31 @@ public class CategoriesService {
         }
     }
 
-    public Category findCategoryById(UUID categoryId){
 
-        if(categoryId != null){
-            Category theCategory = categoriesRepository.findCategoryByCategoryId(categoryId);
-            if (theCategory != null) {
-                return theCategory;
-            }
-            else{
-            throw new CategoryNotFoundException();
-            }
-        }else
-        throw new MissingFieldsException();
-    }
-
-    public Category findCategoryByName(String categoryName){
-
-        if(categoryName != null){
-            Category theCategory = categoriesRepository.findCategoryByCategoryName(categoryName);
-            if (theCategory != null) {
-                return theCategory;
-            }
-            else{
-                throw new CategoryNotFoundException();
-            }
-        }
-        throw new MissingFieldsException();
-//        TypedQuery<Category> theQuery = entityManager.createQuery(
-//                "FROM Category WHERE categoryName=:theName", Category.class);
-//
-//        theQuery.setParameter("theName", categoryName);
-        // Procura item por nome
-    }
 
     public void deleteCategoryById(UUID categoryId){
         if(categoryId != null){
-            // instancia a categoria
-            Category theCategory = findCategoryById(categoryId);
-
-            //Deleta a categoria
-            categoriesRepository.delete(theCategory);
+            try {
+                Category theCategory = findCategoryById(categoryId);
+                //Deleta a categoria
+                categoriesRepository.delete(theCategory);
+            }catch (Exception e){
+                throw new CategoryNotFoundException();
+            }
         }else {
             throw new MissingFieldsException();
         }
-
     }
 
     public void deleteCategoryByName(String categoryName) {
         if(categoryName != null){
-            // instancia a categoria
-            Category theCategory = findCategoryByName(categoryName);
-
-            if(theCategory == null){
+            try {
+                Category theCategory = findCategoryByName(categoryName);
+                //Deleta a categoria
+                categoriesRepository.delete(theCategory);
+            }catch (Exception e){
                 throw new CategoryNotFoundException();
             }
-
-            //Deleta a categoria
-            categoriesRepository.delete(theCategory);
         }else {
             throw new MissingFieldsException();
         }

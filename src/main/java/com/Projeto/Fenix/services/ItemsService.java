@@ -84,61 +84,51 @@ public class ItemsService {
     }
     public Item updateItemByName(String itemName, String itemDescription, Category itemCategory,
                                String itemImage, String itemBrand) throws Exception {
-        // instancia o item com que será atualizado
-        Item theUpdatedItem = findItemByName(itemName);
-
-        //Valida se o nome foi atualizado e caso ele foi atualizado se esse novo nome está disponível
-        theUpdatedItem.setItemName(itemName);
-        theUpdatedItem.setItemDescription(itemDescription);
-        theUpdatedItem.setItemCategory(itemCategory);
-        theUpdatedItem.setItemImage(itemImage);
-        theUpdatedItem.setItemBrand(itemBrand);
-
-        itemsRepository.save(theUpdatedItem);
-
-        return theUpdatedItem;
-    }
-    public Item findItemById(UUID theItemId) {
-        if (theItemId != null){
-            Item theItem = itemsRepository.findItemByItemId(theItemId);
-            if (theItem != null){
-                return theItem;
-            }else {
+        //Valida se nenhum dos campos é nulo
+        if (itemName != null || itemDescription != null || itemCategory != null){
+            try{
+                //Procura o item e caso encontre ele, atualiza os campos e salva
+                Item updatedItem = findItemByName(itemName);
+                updatedItem.setItemDescription(itemDescription);
+                updatedItem.setItemImage(itemImage);
+                updatedItem.setItemBrand(itemBrand);
+                updatedItem.setItemCategory(itemCategory);
+                return itemsRepository.save(updatedItem);
+            } catch (Exception e) {
                 throw new ItemNotFoundException();
             }
         }
-        //Procura item por ID
+        throw new MissingFieldsException();
+    }
+    public Item findItemById(UUID theItemId) {
+        //Valida se o input não foi nulo
+        if (theItemId != null){
+            try {
+                Item theItem = itemsRepository.findItemByItemId(theItemId);
+                return theItem;
+            }catch (Exception e){
+                throw new ItemNotFoundException();
+            }
+        }
         throw new MissingFieldsException();
     }
 
     public Item findItemByName(String theItemName){
         if (theItemName != null){
-            Item theItem = itemsRepository.findItemByItemName(theItemName);
-            if (theItem != null){
+            try {
+                Item theItem = itemsRepository.findItemByItemName(theItemName);
                 return theItem;
-            }else {
+            }catch (Exception e){
                 throw new ItemNotFoundException();
             }
         }
         throw new MissingFieldsException();
     }
 
-    Boolean validateNameIsAvailable(String theName){
-        //Valida se o nome está disponível, false = já está em uso, true = está disponível.
-        try{
-            findItemByName(theName);
-            return false;
-        }catch (Exception e){
-            return true;
-        }
-    }
-
     public List<Item> listAllItems() {
-        TypedQuery<Item> theQuery = entityManager.createQuery(
-                "FROM Item", Item.class);
-        // Lita todos os itens
+
         try {
-            return theQuery.getResultList();
+            return itemsRepository.listAllItems();
         }catch (Exception e){
             throw new ItemNotFoundException();
         }
@@ -146,17 +136,30 @@ public class ItemsService {
     }
 
     public void deleteItemById(UUID theItemId) throws Exception {
-        // Instancia o item
-        Item theItem = findItemById(theItemId);
-        // Deleta o item
-        itemsRepository.delete(theItem);
+        if (theItemId != null){
+            try {
+                Item theItem = findItemById(theItemId);
+                itemsRepository.delete(theItem);
+            }catch (Exception e){
+                throw new ItemNotFoundException();
+            }
+        }else {
+            throw new MissingFieldsException();
+        }
+
     }
 
     public void deleteItemByName(String theItemName) throws Exception {
-        // Instancia o item
-        Item theItem = findItemByName(theItemName);
-        // Deleta o item
-        itemsRepository.delete(theItem);
+        if (theItemName != null){
+            try {
+                Item theItem = findItemByName(theItemName);
+                itemsRepository.delete(theItem);
+            }catch (Exception e){
+                throw new ItemNotFoundException();
+            }
+        }else {
+            throw new MissingFieldsException();
+        }
     }
 }
 

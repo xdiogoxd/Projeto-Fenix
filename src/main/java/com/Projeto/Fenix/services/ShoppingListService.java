@@ -7,6 +7,7 @@ import com.Projeto.Fenix.domain.shoppingList.ShoppingList;
 import com.Projeto.Fenix.domain.shoppingList.ShoppingListDetails;
 import com.Projeto.Fenix.domain.user.User;
 import com.Projeto.Fenix.exceptions.ListNotFound;
+import com.Projeto.Fenix.exceptions.MissingFieldsException;
 import com.Projeto.Fenix.exceptions.ShoppingListNotFound;
 import com.Projeto.Fenix.exceptions.UserNotAuthorized;
 import com.Projeto.Fenix.repositories.ListMembersRepository;
@@ -41,41 +42,38 @@ public class ShoppingListService {
 
 
     public ShoppingList createShoppingList(User theUser, String listName) throws Exception {
-        //Cria nova shopping list e seta os atributos
-        ShoppingList newShoppingList = new ShoppingList();
+        if (listName != null){
+            //Cria nova shopping list e seta os atributos
+            ShoppingList newShoppingList = new ShoppingList();
 
-        UUID theListId = uuidService.generateUUID();
-        Date today = new Date();
+            UUID theListId = uuidService.generateUUID();
+            Date today = new Date();
 
-        newShoppingList.setListId(theListId);
-        newShoppingList.setListName(listName);
-        newShoppingList.setCreationDate(today);
+            newShoppingList.setListId(theListId);
+            newShoppingList.setListName(listName);
+            newShoppingList.setCreationDate(today);
 
-        shoppingListRepository.save(newShoppingList);
+            shoppingListRepository.save(newShoppingList);
 
-        //Cria listMember na tabela ListMembers
-        shoppingListMembersService.addListMemberOwner(theUser,ListMemberRoles.ADMIN, newShoppingList);
-        return newShoppingList;
+            //Cria listMember na tabela ListMembers
+            shoppingListMembersService.addListMemberOwner(theUser,ListMemberRoles.ADMIN, newShoppingList);
+            return newShoppingList;
+        }
+        throw new MissingFieldsException();
     }
 
-
-
     public ShoppingList findShoppingListById(UUID theShoppingListId) throws Exception {
-
-
         //Cria query para achar a lista
         TypedQuery<ShoppingList> theQuery = entityManager.createQuery(
                 "FROM ShoppingList WHERE listId=:theList", ShoppingList.class);
 
         theQuery.setParameter("theList",theShoppingListId);
-
         try{
             return theQuery.getSingleResult();
         }catch (Exception exception){
             throw new ShoppingListNotFound();
         }
     }
-
 
     public List<ShoppingList> listAllShoppingListsByUser(List<ListMembers> theList) throws Exception {
 
@@ -95,7 +93,6 @@ public class ShoppingListService {
             System.out.println(allShoppingLists);
         }
         return allShoppingLists;
-
     }
 
     @Transactional

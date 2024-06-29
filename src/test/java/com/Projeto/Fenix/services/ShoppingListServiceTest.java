@@ -1,28 +1,39 @@
 package com.Projeto.Fenix.services;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ShoppingListServiceTest {
 
+    @DisplayName("Cria lista com sucesso")
     @Test
     void createShoppingList() {
     }
 
+    @DisplayName("Procura Lista com sucesso")
     @Test
-    void findShoppingListById() {
+    void findShoppingListByIdSuccess() {
     }
 
+    @DisplayName("Procura Lista sem resultados")
     @Test
-    void listAllShoppingListsByUser() {
+    void findShoppingListByIdWithNoResults() {
     }
 
+    @DisplayName("Atualiza lista por Id com sucesso")
     @Test
-    void updateShoppingListById() {
+    void updateShoppingListByIdSuccess() {
     }
 
+    @DisplayName("Atualiza lista por Id com sucesso")
     @Test
-    void deleteShoppingListById() {
+    void updateShoppingListByIdWithNullFields() {
+    }
+
+    @DisplayName("Deleta lista por Id com sucesso")
+    @Test
+    void deleteShoppingListByIdSuccess() {
     }
 }
