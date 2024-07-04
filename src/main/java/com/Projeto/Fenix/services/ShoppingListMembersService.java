@@ -64,7 +64,7 @@ public class ShoppingListMembersService {
     }
 
     public void validateUserAuthorization(User requester, ShoppingList list, ListMemberRoles theMainRole){
-        // valida autorização de acordo com os parametros enviados
+        // valida autorização conforme os parâmetros enviados
         ListMembers theMember = findMemberByList(requester, list);
 
         if (theMainRole.equals(ListMemberRoles.ADMIN)){

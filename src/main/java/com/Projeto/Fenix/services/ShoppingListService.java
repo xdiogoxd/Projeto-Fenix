@@ -64,15 +64,14 @@ public class ShoppingListService {
 
     public ShoppingList findShoppingListById(UUID theShoppingListId) throws Exception {
         //Cria query para achar a lista
-        TypedQuery<ShoppingList> theQuery = entityManager.createQuery(
-                "FROM ShoppingList WHERE listId=:theList", ShoppingList.class);
-
-        theQuery.setParameter("theList",theShoppingListId);
-        try{
-            return theQuery.getSingleResult();
-        }catch (Exception exception){
-            throw new ShoppingListNotFound();
+        if (theShoppingListId != null){
+            try {
+                return shoppingListRepository.findShoppingListByListId(theShoppingListId);
+            }catch (Exception e){
+                throw new ShoppingListNotFound();
+            }
         }
+        throw new MissingFieldsException();
     }
 
     public List<ShoppingList> listAllShoppingListsByUser(List<ListMembers> theList) throws Exception {
@@ -95,30 +94,39 @@ public class ShoppingListService {
         return allShoppingLists;
     }
 
-    @Transactional
     public ShoppingList updateShoppingListById(UUID shoppingListId, String shoppingListName,
-                                               String shoppingDescription, String shoppingListImage,
-                                               Date shoppingListCreationDate, Date shoppingListGoalDate) throws Exception {
+                                               String shoppingDescription, String shoppingListImage
+                                               , Date shoppingListGoalDate) throws Exception {
+        if (shoppingListId != null && shoppingListName != null){
+            try {
+                ShoppingList theUpdateList = shoppingListRepository.findShoppingListByListId(shoppingListId);
 
-        // Localiza a shopping list, seta os campos e atualiza
-        ShoppingList theUpdateList = findShoppingListById(shoppingListId);
+                theUpdateList.setListName(shoppingListName);
+                theUpdateList.setListDescription(shoppingDescription);
+                theUpdateList.setListImage(shoppingListImage);
+                theUpdateList.setGoalDate(shoppingListGoalDate);
 
-        theUpdateList.setListName(shoppingListName);
-        theUpdateList.setListDescription(shoppingDescription);
-        theUpdateList.setListImage(shoppingListImage);
-        theUpdateList.setCreationDate(shoppingListCreationDate);
-        theUpdateList.setGoalDate(shoppingListGoalDate);
-
-        entityManager.merge(theUpdateList);
-
-        return theUpdateList;
+                return shoppingListRepository.save(theUpdateList);
+            }catch (Exception e){
+                throw new ShoppingListNotFound();
+            }
+        }
+        throw new MissingFieldsException();
     }
 
     @Transactional
-    public void deleteShoppingListById(ShoppingList theList) throws Exception {
+    public void deleteShoppingListById(UUID shoppingListId) throws Exception {
 
-        shoppingListMembersService.deleteAllMembersFromList(theList);
-        entityManager.remove(theList);
+        if (shoppingListId != null){
+            try {
+                ShoppingList theShoppingList = shoppingListRepository.findShoppingListByListId(shoppingListId);
+
+                shoppingListRepository.delete(theShoppingList);
+            }catch (Exception e){
+                throw new ShoppingListNotFound();
+            }
+        }
+        throw new MissingFieldsException();
     }
 
 

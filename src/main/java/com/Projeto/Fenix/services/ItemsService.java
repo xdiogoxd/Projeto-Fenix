@@ -21,20 +21,14 @@ public class ItemsService {
     UuidService uuidService;
 
     @Autowired
-    UserService userService;
-
-    @Autowired
     ItemsRepository itemsRepository;
-
-    @Autowired
-    EntityManager entityManager;
 
     public Item addNewItem(String itemName, String itemDescription, Category itemCategory) throws Exception {
         //Valida se nenhum dos campos enviados foram nulos
         if (itemName != null && itemDescription != null && itemCategory != null){
             try{
                 //Valida se o nome já está sendo utilizado
-                findItemByName(itemName);
+                itemsRepository.findItemByItemName(itemName);
             }catch (Exception e){
                 // Seta todos os atributos do item e cria o item
                 UUID theId = uuidService.generateUUID();
@@ -59,7 +53,7 @@ public class ItemsService {
             Item updatedItem = new Item();
             //Localiza o item
             try{
-                updatedItem = findItemById(itemId);
+                updatedItem = itemsRepository.findItemByItemId(itemId);
                 updatedItem.setItemName(itemName);
                 updatedItem.setItemDescription(itemDescription);
                 updatedItem.setItemImage(itemImage);
@@ -70,7 +64,7 @@ public class ItemsService {
                 throw new ItemNotFoundException();
             }
             try{
-                Item theItem = findItemByName(itemName);
+                Item theItem = itemsRepository.findItemByItemName(itemName);
                 //Valida se o nome do item está disponível
                 if (theItem.getItemId() == updatedItem.getItemId()){
                     return itemsRepository.save(updatedItem);
@@ -82,8 +76,8 @@ public class ItemsService {
         }
             throw new MissingFieldsException();
     }
-    public Item updateItemByName(String itemName, String itemDescription, Category itemCategory,
-                               String itemImage, String itemBrand) throws Exception {
+    public Item updateItemByName(String itemName, String itemDescription,
+                               String itemImage, String itemBrand, Category itemCategory) throws Exception {
         //Valida se nenhum dos campos é nulo
         if (itemName != null || itemDescription != null || itemCategory != null){
             try{
@@ -126,13 +120,11 @@ public class ItemsService {
     }
 
     public List<Item> listAllItems() {
-
         try {
             return itemsRepository.listAllItems();
         }catch (Exception e){
             throw new ItemNotFoundException();
         }
-
     }
 
     public void deleteItemById(UUID theItemId) throws Exception {

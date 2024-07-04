@@ -71,7 +71,7 @@ public class ShoppingListControllers {
 
         ShoppingList theShoppingList = shoppingListService.updateShoppingListById(shoppingListDTO.listId(),
                 shoppingListDTO.listName(), shoppingListDTO.listDescription(), shoppingListDTO.listImage(),
-                shoppingListDTO.creationDate(), shoppingListDTO.goalDate());
+                shoppingListDTO.goalDate());
 
         return new ResponseEntity<>(theShoppingList, HttpStatus.OK);
     }
@@ -85,7 +85,7 @@ public class ShoppingListControllers {
 
         shoppingListMembersService.validateUserAuthorization(theUser, theList, ListMemberRoles.ADMIN);
 
-        shoppingListService.deleteShoppingListById(theList);
+        shoppingListService.deleteShoppingListById(theList.getListId());
         return new ResponseEntity<>("ShoppingList deleted",HttpStatus.OK);
     }
 

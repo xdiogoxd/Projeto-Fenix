@@ -46,7 +46,7 @@ public class ItemsControllers {
 
         userService.validateUserAuthorization(theUser);
 
-        Item updatedItem = itemsService.updateItemByName(itemsDTO.itemName(), itemsDTO.itemDescription(), theItemCategory, itemsDTO.itemImage(), itemsDTO.itemBrand());
+        Item updatedItem = itemsService.updateItemByName(itemsDTO.itemName(), itemsDTO.itemDescription(), itemsDTO.itemImage(), itemsDTO.itemBrand(), theItemCategory);
         return new ResponseEntity<>(updatedItem, HttpStatus.OK);
     }
 
